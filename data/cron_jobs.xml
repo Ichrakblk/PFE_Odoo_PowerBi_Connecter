@@ -1,0 +1,15 @@
+
+
+<odoo>
+
+    <record id="cron_upload_jobs" model="ir.cron">
+        <field name="name">Upload all jobs</field>
+        <field name="model_id" ref="model_job_model"/>
+        <field name="state">code</field>
+        <field name="code">model.upload_all_jobs()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

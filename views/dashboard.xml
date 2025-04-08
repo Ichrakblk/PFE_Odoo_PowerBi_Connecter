@@ -1,0 +1,86 @@
+<odoo>
+    <record id="view_power_bi_dashboard_kanban" model="ir.ui.view">
+        <field name="name">power.bi.dashboard.kanban</field>
+        <field name="model">power_bi.dashboard</field>
+        <field name="arch" type="xml">
+            <kanban class="oe_kanban_global">
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card">
+                            <div class="oe_kanban_content" style="display: flex; gap: 30px;">
+
+                                <!-- Section Workspaces -->
+                                <div class="oe_kanban_column" style="margin-right: 200px; border: 2px solid #007bff; border-radius: 8px; padding: 55px; background-color: #f0f8ff;">
+                                    <div class="o_kanban_record_icon" style="font-size: 120px; color: #007bff; text-align: center; margin-bottom: 2px;">
+                                        <i class="fa fa-cogs"></i>
+                                    </div>
+
+                                    <div class="oe_kanban_title">
+                                        <strong>Workspaces</strong>
+                                    </div>
+                                    <div class="oe_kanban_stats">
+                                        <span class="oe_stat_text">Total:</span>
+                                        <span class="oe_stat_value"><field name="workspace_total"/></span>
+                                    </div>
+
+                                </div>
+
+                                <!-- Section Datasets -->
+                                <div class="oe_kanban_column" style="margin-right: 200px; border: 2px solid #28a745; border-radius: 8px; padding: 55px; background-color: #e9f7e9;">
+                                    <div class="o_kanban_record_icon" style="font-size: 120px; color: #007bff; text-align: center; margin-bottom: 2px;">
+                                        <i class="fa fa-database"></i>
+                                    </div>
+                                    <div class="oe_kanban_title">
+                                        <strong>Datasets</strong>
+                                    </div>
+                                    <div class="oe_kanban_stats">
+                                        <span class="oe_stat_text">Total:</span>
+                                        <span class="oe_stat_value"><field name="dataset_total"/></span>
+                                    </div>
+                                    <div class="oe_kanban_stats">
+                                        <span class="oe_stat_text">Published:</span>
+                                        <span class="oe_stat_value oe_green"><field name="dataset_published"/></span>
+                                    </div>
+                                    <div class="oe_kanban_stats">
+                                        <span class="oe_stat_text">Unpublished:</span>
+                                        <span class="oe_stat_value oe_red"><field name="dataset_unpublished"/></span>
+                                    </div>
+                                </div>
+
+                                <!-- Section Tables -->
+                                <div class="oe_kanban_column" style="margin-right: 20px; border: 2px solid #ffc107; border-radius: 8px; padding: 55px; background-color: #fff3cd;">
+                                    <div class="o_kanban_record_icon" style="font-size: 120px; color: #007bff; text-align: center; margin-bottom: 2px;">
+                                        <i class="fa fa-table"></i>
+                                    </div>
+
+                                    <div class="oe_kanban_title">
+                                        <strong>Tables</strong>
+                                    </div>
+                                    <div class="oe_kanban_stats">
+                                        <span class="oe_stat_text">Total:</span>
+                                        <span class="oe_stat_value"><field name="table_total"/></span>
+                                    </div>
+                                    <div class="oe_kanban_stats">
+                                        <span class="oe_stat_text">Published:</span>
+                                        <span class="oe_stat_value oe_green"><field name="table_published"/></span>
+                                    </div>
+                                    <div class="oe_kanban_stats">
+                                        <span class="oe_stat_text">Unpublished:</span>
+                                        <span class="oe_stat_value oe_red"><field name="table_unpublished"/></span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_power_bi_dashboard" model="ir.actions.act_window">
+        <field name="name">Power BI Dashboard</field>
+        <field name="res_model">power_bi.dashboard</field>
+        <field name="view_mode">kanban</field>
+    </record>
+</odoo>

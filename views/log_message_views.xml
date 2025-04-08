@@ -1,0 +1,66 @@
+<odoo>
+    <record id="view_log_message_tree" model="ir.ui.view">
+        <field name="name">log.message.tree</field>
+        <field name="model">log.message</field>
+        <field name="arch" type="xml">
+            <tree string="Log Messages">
+                <field name="log_date"/>
+                <field name="message"/>
+                <field name="log_message"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_log_message_form" model="ir.ui.view">
+        <field name="name">log.message.form</field>
+        <field name="model">log.message</field>
+        <field name="arch" type="xml">
+            <form string="Log Message">
+                <sheet>
+                    <group>
+                        <field name="log_date"/>
+                        <field name="message"/>
+                        <field name="log_message"/>
+                        <button name="send_log_report_by_email"
+                    string="Send Log Report"
+                    type="object"
+                    class="btn-primary"/>
+                                        <button name="action_download_report" string="Télécharger le rapport" type="object" class="oe_highlight"/>
+
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_report_log_message" model="ir.actions.report">
+        <field name="name">Log Report</field>
+        <field name="model">log.message</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_powerbi_connector.report_log_message</field>
+        <field name="report_file">custom_powerbi_connector.report_log_message</field>
+        <field name="attachment_use">True</field>
+    </record>
+
+    <report
+        id="report_log_message"
+        model="log.message"
+        string="Log Report"
+        report_type="qweb-pdf"
+        name="custom_powerbi_connector.report_log_message"
+        file="custom_powerbi_connector.report_log_message"
+        attachment_use="True"/>
+
+
+    <record id="action_log_message" model="ir.actions.act_window">
+        <field name="name">Log Messages</field>
+        <field name="res_model">log.message</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                No log messages have been recorded yet.
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

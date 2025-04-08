@@ -1,0 +1,14 @@
+<odoo>
+    <template id="report_log_message">
+        <t t-call="web.basic_layout">
+            <t t-foreach="docs" t-as="o">
+                <div class="page">
+                    <h2>Log Report</h2>
+                    <p><strong>Date:</strong> <t t-esc="o.log_date"/></p>
+                    <p><strong>Message Type:</strong> <t t-esc="o.message"/></p>
+                    <p><strong>Message:</strong> <t t-esc="o.log_message"/></p>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

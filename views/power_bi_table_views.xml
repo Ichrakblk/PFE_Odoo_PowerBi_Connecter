@@ -1,0 +1,57 @@
+<odoo>
+     <record id="view_power_bi_table_form" model="ir.ui.view">
+        <field name="name">power.bi.table.form</field>
+        <field name="model">power_bi.table</field>
+        <field name="arch" type="xml">
+            <form string="Power BI Table">
+                <div class="oe_form_header"></div>
+                                          <button name="action_go_to_dataset"
+        type="object"
+        class="oe_highlight"
+        string="Pass to Dataset"
+        icon="fa-arrow-right"/>
+
+
+                <sheet>
+                    <header>
+
+
+                    </header>
+                    <group>
+                        <field name="table_ids" widget="many2many_tags"/>
+                        <field name="merge_table"/>
+                    </group>
+                    <notebook>
+                        <page string="Fields">
+                            <field name="selected_field_ids" widget="many2many_checkboxes"/>
+                        </page>
+
+                        <page string="Merged Fields">
+    <field name="selected_field_ids" widget="many2many_checkboxes"/>
+</page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_power_bi_table_tree" model="ir.ui.view">
+        <field name="name">power.bi.table.tree</field>
+        <field name="model">power_bi.table</field>
+        <field name="arch" type="xml">
+            <tree string="Power BI Tables">
+
+                <field name="table_ids" widget="many2many_tags" options="{'no_create': True}" decoration-info="1"/>
+                <field name="selected_field_ids" decoration-info="1"/>
+
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_power_bi_table" model="ir.actions.act_window">
+        <field name="name">Power BI Tables</field>
+        <field name="res_model">power_bi.table</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,21 @@
+<odoo>
+    <record id="view_power_bi_workspace_temp_tree" model="ir.ui.view">
+        <field name="name">power_bi.workspace.temp.tree</field>
+        <field name="model">power_bi.workspace.temp</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="workspace_id"/>
+                <button name="action_confirm_selection" type="object" string="Sélectionner" class="oe_highlight"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_power_bi_workspace_temp" model="ir.actions.act_window">
+        <field name="name">Sélectionner un Workspace</field>
+        <field name="res_model">power_bi.workspace.temp</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_power_bi_workspace_temp_tree"/>
+        <field name="target">new</field>
+    </record>
+</odoo>

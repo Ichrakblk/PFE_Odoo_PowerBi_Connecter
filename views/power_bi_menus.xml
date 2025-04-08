@@ -1,0 +1,19 @@
+<odoo>
+    <menuitem id="menu_powerbi_root" name="Power BI Manager" />
+
+    <menuitem id="menu_powerbi_connections" parent="menu_powerbi_root" name="Connections" action="action_powerbi_connections"/>
+    <menuitem id="menu_powerbi_workspaces" parent="menu_powerbi_root" name="Workspaces" action="action_redirect_to_tree"/>
+    <menuitem id="menu_powerbi_tables" parent="menu_powerbi_root" name="Tables" action="action_power_bi_table"/>
+    <menuitem id="menu_powerbi_datasets" parent="menu_powerbi_root" name="Datasets" action="action_powerbi_datasets"/>
+
+
+    <menuitem id="menu_powerbi_dashboard_form" parent="menu_powerbi_root" name="Dashboard" action="action_power_bi_dashboard"/>
+
+    <menuitem id="menu_powerbi" name=" Configuration" parent="menu_powerbi_root"/>
+
+
+    <menuitem id="menu_powerbi_job" parent="menu_powerbi" name="Jobs" action="action_cron_jobs_upload_all"/>
+
+
+    <menuitem id="menu_powerbi_log" parent="menu_powerbi" name="Log Message" action="action_log_message"/>
+</odoo>

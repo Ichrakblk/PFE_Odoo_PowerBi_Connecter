@@ -1,0 +1,14 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_powerbi_connector_user,powerbi.connector user,model_powerbi_connector,,1,0,0,0
+access_powerbi_connector_manager,powerbi.connector manager,model_powerbi_connector,,1,1,1,1
+access_power_bi_connection,power_bi_connection,model_power_bi_connection,,1,1,1,1
+access_power_bi_workspace,power_bi_workspace,model_power_bi_workspace,,1,1,1,1
+access_power_bi_dataset,power_bi_dataset,model_power_bi_dataset,,1,1,1,1
+access_power_bi_workspace_temp,power_bi_workspace_temp,model_power_bi_workspace_temp,,1,1,1,1
+access_power_bi_table,power_bi.table,model_power_bi_table,,1,1,1,1
+access_power_bi_table_field,power_bi.table.field,model_power_bi_table_field,,1,1,1,1
+access_power_bi_table_field,power_bi.table.field,model_power_bi_table_field,,1,1,1,1
+access_power_bi_dashboard,power_bi.dashboard,model_power_bi_dashboard,,1,1,1,1
+access_power_bi_job,job.model,model_job_model,,1,1,1,1
+access_log_message,log.message,model_log_message,,1,1,1,1
+

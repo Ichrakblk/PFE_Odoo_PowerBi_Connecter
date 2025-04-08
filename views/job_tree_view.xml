@@ -1,0 +1,33 @@
+<odoo>
+    <record id="view_cron_jobs_tree" model="ir.ui.view">
+        <field name="name">ir.cron.tree</field>
+        <field name="model">ir.cron</field>
+        <field name="arch" type="xml">
+            <tree string="Scheduled Actions">
+
+                <field name="name"/>
+                <field name="state"/>
+
+                <field name="nextcall"/>
+
+                <field name="numbercall"/>
+
+
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_cron_jobs_upload_all" model="ir.actions.act_window">
+        <field name="name">Upload all jobs</field>
+        <field name="res_model">ir.cron</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_cron_jobs_tree"/>
+        <field name="domain">[('name', '=', 'Upload all jobs')]</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                No scheduled actions have been created yet.
+            </p>
+        </field>
+    </record>
+</odoo>

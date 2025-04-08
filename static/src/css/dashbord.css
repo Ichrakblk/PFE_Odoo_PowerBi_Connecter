@@ -1,0 +1,10 @@
+.o_custom_kanban_card {
+    background-color: #f0f0f0;  /* Couleur de fond personnalisée */
+    border-radius: 8px;  /* Bords arrondis */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Ombre de carte */
+}
+
+.o_badge_custom {
+    background-color: #4CAF50;  /* Couleur personnalisée du badge */
+    color: white;  /* Texte blanc pour le badge */
+}
