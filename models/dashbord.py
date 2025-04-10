@@ -42,5 +42,5 @@ class PowerBiDashboard(models.Model):
             table_data = self.env['power_bi.table'].read_group([], ['state'], ['state'])
             _logger.info("Grouped read_group result: %s", table_data)
             record.table_total = sum(item.get('state_count', 0) for item in table_data)
-            record.table_published = sum(item['state_count'] for item in table_data if item['state'] == 'published')
-            record.table_unpublished = record.table_total - record.table_published
+            record.table_unpublished = sum(item['state_count'] for item in table_data if item['state'] == 'published')
+            record.table_published = record.table_total - record.table_published

@@ -3,6 +3,7 @@
 
     <menuitem id="menu_powerbi_connections" parent="menu_powerbi_root" name="Connections" action="action_powerbi_connections"/>
     <menuitem id="menu_powerbi_workspaces" parent="menu_powerbi_root" name="Workspaces" action="action_redirect_to_tree"/>
+
     <menuitem id="menu_powerbi_tables" parent="menu_powerbi_root" name="Tables" action="action_power_bi_table"/>
     <menuitem id="menu_powerbi_datasets" parent="menu_powerbi_root" name="Datasets" action="action_powerbi_datasets"/>
 

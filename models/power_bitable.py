@@ -60,6 +60,14 @@ class PowerBiTable(models.Model):
 
         return {'domain': {'selected_field_ids': []}}
 
+    @api.onchange('dataset_ids')
+    def _onchange_dataset_ids(self):
+        for rec in self:
+            if rec.dataset_ids:
+                rec.state = 'published'
+            else:
+                rec.state = 'to_publish'
+
     def action_go_to_dataset(self):
         self.ensure_one()
 

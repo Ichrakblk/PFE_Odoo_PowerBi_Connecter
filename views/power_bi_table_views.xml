@@ -37,6 +37,7 @@
                 <field name="table_ids" widget="many2many_tags" options="{'no_create': True}" decoration-info="1" />
                 <field name="selected_field_ids" decoration-info="1"/>
                  <field name="related_field_ids" decoration-danger="1"/>
+
             </tree>
         </field>
     </record>

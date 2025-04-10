@@ -26,22 +26,16 @@ class LogMessage(models.Model):
     def create(self, vals):
         # Créer l'enregistrement et calculer l'URL du PDF
         record = super(LogMessage, self).create(vals)
-        record._compute_pdf_url()
+
         return record
 
     def write(self, vals):
 
         result = super(LogMessage, self).write(vals)
-        self._compute_pdf_url()
+
         return result
 
-    def _compute_pdf_url(self):
-        """Calculer l'URL du PDF pour chaque enregistrement"""
-        for record in self:
-            base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-            report_name = 'custom_powerbi_connector.report_log_message'
-            pdf_url = f"{base_url}/report/pdf/{report_name}/{record.id}"
-            record.pdf_url = pdf_url
+
 
     def action_download_report(self):
         """Action pour télécharger le rapport en PDF"""
@@ -102,3 +96,5 @@ class LogMessage(models.Model):
             print("Action de rapport créée :", report_action)
         else:
             print("L'action de rapport existe déjà.")
+
+
