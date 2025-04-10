@@ -1,37 +1,52 @@
 <odoo>
     <record id="view_log_message_tree" model="ir.ui.view">
-        <field name="name">log.message.tree</field>
-        <field name="model">log.message</field>
-        <field name="arch" type="xml">
-            <tree string="Log Messages">
-                <field name="log_date"/>
-                <field name="message"/>
-                <field name="log_message"/>
-            </tree>
-        </field>
-    </record>
+    <field name="name">log.message.tree</field>
+    <field name="model">log.message</field>
+    <field name="arch" type="xml">
+        <tree string="📜 Messages de log">
+            <field name="log_date" string="🕒 Date"/>
+            <field name="message" string="🧠 Sujet"/>
+            <field name="log_message" string="📝 Détail"/>
+        </tree>
+    </field>
+</record>
 
     <record id="view_log_message_form" model="ir.ui.view">
-        <field name="name">log.message.form</field>
-        <field name="model">log.message</field>
-        <field name="arch" type="xml">
-            <form string="Log Message">
-                <sheet>
-                    <group>
-                        <field name="log_date"/>
-                        <field name="message"/>
-                        <field name="log_message"/>
-                        <button name="send_log_report_by_email"
-                    string="Send Log Report"
-                    type="object"
-                    class="btn-primary"/>
-                                        <button name="action_download_report" string="Télécharger le rapport" type="object" class="oe_highlight"/>
+    <field name="name">log.message.form</field>
+    <field name="model">log.message</field>
+    <field name="arch" type="xml">
+        <form string="📥 Message de Log" class="o_form_sheet_bg">
+            <header>
+                <button name="action_download_report"
+                        string="⬇️ Télécharger le rapport"
+                        type="object" class="oe_highlight"
+                        />
+            </header>
 
+            <sheet>
+                <div class="oe_title">
+                    <h2 style="color:#2c3e50; font-weight:700;">
+                        🧠 <field name="message" readonly="1"/>
+                    </h2>
+                </div>
+
+                <group>
+                    <group col="2" string="🕒 Informations">
+                        <field name="log_date" string="🗓️ Date"/>
+                        <field name="log_message" string="📝 Détail"/>
                     </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
+
+                    <group col="1" string="📄 Rapport PDF">
+                        <field name="pdf_file" widget="pfe_viewer" style="height:400px; border: 1px solid #ddd;"/>
+                    </group>
+                </group>
+            </sheet>
+
+
+        </form>
+    </field>
+</record>
+
     <record id="action_report_log_message" model="ir.actions.report">
         <field name="name">Log Report</field>
         <field name="model">log.message</field>

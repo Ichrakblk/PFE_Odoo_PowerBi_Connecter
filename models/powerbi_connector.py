@@ -37,13 +37,13 @@ class PowerBIConnector(models.Model):
                 if isinstance(value, bytes):
                     record_data[field] = base64.b64encode(value).decode('utf-8')  # Conversion en base64
 
-                # Convertir les champs de type 'datetime' en chaîne au format ISO
+
                 if isinstance(value, datetime):
                     record_data[field] = value.isoformat()
 
             data_list.append(record_data)
 
-        # Appeler la méthode pour envoyer les données
+
         self._send_to_powerbi(model_name, data_list)
 
     def _send_to_powerbi(self, model_name, data):

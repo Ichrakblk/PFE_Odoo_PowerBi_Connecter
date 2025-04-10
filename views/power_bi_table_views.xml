@@ -1,53 +1,47 @@
 <odoo>
-     <record id="view_power_bi_table_form" model="ir.ui.view">
+    <record id="view_power_bi_table_form" model="ir.ui.view">
         <field name="name">power.bi.table.form</field>
         <field name="model">power_bi.table</field>
         <field name="arch" type="xml">
-            <form string="Power BI Table">
+             <form string="📊 Power BI Table" class="oe_form_sheet">
                 <div class="oe_form_header"></div>
-                                          <button name="action_go_to_dataset"
-        type="object"
-        class="oe_highlight"
-        string="Pass to Dataset"
-        icon="fa-arrow-right"/>
-
-
+                <button name="action_go_to_dataset"
+                    type="object"
+                    class="oe_highlight"
+                        string="🚀 Pass to Dataset"
+                    icon="fa-arrow-right"/>
                 <sheet>
-                    <header>
-
-
-                    </header>
-                    <group>
-                        <field name="table_ids" widget="many2many_tags"/>
-                        <field name="merge_table"/>
+                    <group string="🗂️ Table Configuration" col="2">
+                        <field name="table_ids" widget="many2many_tags" placeholder="Select Tables..."/>
+                        <field name="merge_table" class="o_light_label"/>
                     </group>
                     <notebook>
-                        <page string="Fields">
+                          <page string="🧮 Fields">
                             <field name="selected_field_ids" widget="many2many_checkboxes"/>
                         </page>
-
-                        <page string="Merged Fields">
-    <field name="selected_field_ids" widget="many2many_checkboxes"/>
-</page>
-
+                        <page string="🧬 Merged Fields" invisible="merge_table != True">
+                            <field name="related_field_ids" widget="many2many_checkboxes"/>
+                        </page>
                     </notebook>
                 </sheet>
             </form>
         </field>
     </record>
 
+
     <record id="view_power_bi_table_tree" model="ir.ui.view">
         <field name="name">power.bi.table.tree</field>
         <field name="model">power_bi.table</field>
         <field name="arch" type="xml">
             <tree string="Power BI Tables">
-
-                <field name="table_ids" widget="many2many_tags" options="{'no_create': True}" decoration-info="1"/>
+                <field name="table_ids" widget="many2many_tags" options="{'no_create': True}" decoration-info="1" />
                 <field name="selected_field_ids" decoration-info="1"/>
-
+                 <field name="related_field_ids" decoration-danger="1"/>
             </tree>
         </field>
     </record>
+
+
 
     <record id="action_power_bi_table" model="ir.actions.act_window">
         <field name="name">Power BI Tables</field>

@@ -3,33 +3,33 @@
         <field name="name">power.bi.connection.form</field>
         <field name="model">power_bi.connection</field>
         <field name="arch" type="xml">
-             <form string="Power BI Connection">
+            <form string="🔌 Power BI Connection" class="oe_form_sheet">
 
-                <div class="oe_form_header">
-
-                    <button string="Exist Workspace" type="object" name="existe_workspace_popup" class="btn-primary" style="margin-right: 200px;"/>
-
-
-                    <field name="state" widget="statusbar" statusbar_visible="not_connected,connected" style="margin-top: 30px; margin-left: 1000px; margin-bottom: 30px"/>
-                </div>
+                <header>
+                    <button name="existe_workspace_popup" type="object" string="Check Existing Workspaces" class="btn-primary" icon="fa-search"/>
+                    <field name="state" widget="statusbar" statusbar_visible="not_connected,connected"/>
+                </header>
 
                 <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="tenant_id"/>
-                        <field name="client_id"/>
-                        <field name="client_secret"/>
-
-                        <button name="action_test_connection" type="object" string="Test Connection" class="oe_highlight" icon="fa-cogs"/>
+                    <group string="Connection Details" col="2">
+                        <field name="name" readonly="state == 'connected'" placeholder="e.g., My Power BI Connection"/>
+                        <field name="tenant_id" readonly="state == 'connected'" placeholder="Enter Tenant ID"/>
+                        <field name="client_id" readonly="state == 'connected'" placeholder="Enter Client ID"/>
+                        <field name="client_secret" readonly="state == 'connected'" password="True" placeholder="Enter Client Secret"/>
                     </group>
 
-                </sheet>
+                    <group>
+                        <button name="action_test_connection" type="object" string="🔄 Test Connection" class="oe_highlight" icon="fa-plug"/>
+                    </group>
 
-                <div class="oe_button_box" name="button_box">
-                    <button type="object" name="action_test_connection" class="oe_stat_button" icon="fa-database">
-                        <field name="workspace_count" string="Workspaces"/>
-                    </button>
-                </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_test_connection" class="oe_stat_button" icon="fa-database">
+                            <div class="o_stat_info">
+                                <field name="workspace_count" string="Workspaces"/>
+                            </div>
+                        </button>
+                    </div>
+                </sheet>
 
             </form>
         </field>
@@ -39,7 +39,7 @@
         <field name="name">power.bi.connection.tree</field>
         <field name="model">power_bi.connection</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree string="Power BI Connections">
                 <field name="name"/>
                 <field name="state"/>
                 <field name="workspace_name"/>

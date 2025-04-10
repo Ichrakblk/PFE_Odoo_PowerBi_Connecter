@@ -4,42 +4,44 @@
         <field name="name">power_bi.workspace.create.popup</field>
         <field name="model">power_bi.workspace</field>
         <field name="arch" type="xml">
-            <form string="Créer un Workspace">
+            <form string="Create a Workspace 🛠️">
                 <sheet>
                     <group>
-                        <field name="connection_id"/>
-                        <field name="name"/>
-
-                         <button string="Save" type="object" name="action_save_and_redirect" class="btn-primary"/>
-                        <button string="Cancel"  name="action_cancel" type="close" class="btn-secondary" />
+                        <field name="connection_id" string="🔌 Connection"/>
+                        <field name="name" string="🏷️ Workspace Name"/>
 
                     </group>
+                    <div><button string="Save" type="object" name="action_save_and_redirect" class="btn-primary"/>
+                            <button string="❌ Cancel" name="action_cancel" type="close" class="btn-secondary"/></div>
                 </sheet>
+
             </form>
         </field>
     </record>
-<record id="view_power_bi_workspace_existe_form" model="ir.ui.view">
-    <field name="name">power_bi.workspace.existe.form</field>
-    <field name="model">power_bi.workspace</field>
-    <field name="arch" type="xml">
-        <form string="Exister Workspace">
-            <sheet>
-                <group>
-                    <field name="connection_id"/>
-                    <field name="workspace_name" readonly="0"/>
-                </group>
-            </sheet>
-            <footer>
-                <button string="Save" type="object" name="action_create_workspace" class="btn-primary"/>
-                <button string="Cancel" name="action_cancel" type="close" class="btn-secondary"/>
-            </footer>
-        </form>
-    </field>
-</record>
 
+    <record id="view_power_bi_workspace_existe_form" model="ir.ui.view">
+        <field name="name">power_bi.workspace.existe.form</field>
+        <field name="model">power_bi.workspace</field>
+        <field name="arch" type="xml">
+            <form string="Existing Workspace 📂">
+                <sheet>
+                    <group>
+                        <field name="connection_id" string="🔌 Connection"/>
+                        <field name="workspace_name" string="🏷️ Workspace Name" readonly="1"/>
+
+                    </group>
+
+                </sheet>
+              <footer>
+                    <button string="💾 Save" type="object" name="action_create_workspace" class="btn-primary"/>
+                        <button string="❌ Cancel" name="action_cancel" type="close" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
 
     <record id="action_create_workspace_popup" model="ir.actions.act_window">
-        <field name="name">Créer un Workspace</field>
+        <field name="name">Create Workspace 🛠️</field>
         <field name="res_model">power_bi.workspace</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_power_bi_workspace_create_popup"/>
@@ -50,10 +52,10 @@
         <field name="name">power_bi.workspace.tree</field>
         <field name="model">power_bi.workspace</field>
         <field name="arch" type="xml">
-            <tree>
-                <field name="name"/>
-                <field name="workspace_id"/>
-                <field name="connection_id"/>
+            <tree string="Workspaces 🗂️">
+                <field name="name" string="🏷️ Workspace Name"/>
+                <field name="workspace_id" string="🆔 ID"/>
+                <field name="connection_id" string="🔌 Connection"/>
             </tree>
         </field>
     </record>
@@ -62,25 +64,23 @@
         <field name="name">power_bi.workspace.form</field>
         <field name="model">power_bi.workspace</field>
         <field name="arch" type="xml">
-            <form string="Workspace">
+            <form string="Workspace 📂">
                 <sheet>
                     <group>
-                        <field name="connection_id"/>
-                        <field name="name"/>
-
+                        <field name="connection_id" string="🔌 Connection"/>
+                        <field name="name" string="🏷️ Workspace Name"/>
                     </group>
                 </sheet>
-
                 <footer>
-                    <button string="Save" type="object" name="action_save_and_redirect" class="btn-primary"/>
-                    <button string="Cancel"  name="action_cancel" type="close" class="btn-secondary"/>
+                    <button string="💾 Save" type="object" name="action_save_and_redirect" class="btn-primary"/>
+                    <button string="❌ Cancel" name="action_cancel" type="close" class="btn-secondary"/>
                 </footer>
             </form>
         </field>
     </record>
 
     <record id="action_import_power_bi_workspace" model="ir.actions.act_window">
-        <field name="name">Créer un Workspace</field>
+        <field name="name">Create Workspace 🛠️</field>
         <field name="res_model">power_bi.workspace</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_power_bi_workspace_create_popup"/>
@@ -88,12 +88,12 @@
         <field name="context">{}</field>
     </record>
 
-
     <record id="action_redirect_to_tree" model="ir.actions.act_window">
-        <field name="name">Workspaces</field>
+        <field name="name">Workspaces 🗂️</field>
         <field name="res_model">power_bi.workspace</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_power_bi_workspace_tree"/>
         <field name="target">current</field>
     </record>
+
 </odoo>

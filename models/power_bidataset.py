@@ -26,6 +26,12 @@ class PowerBIDataset(models.Model):
         related='table_ids.selected_field_ids',
         readonly=True
     )
+    related_field_ids = fields.Many2many(
+        'ir.model.fields', string="Related Fields",
+        related='table_ids.related_field_ids',
+        readonly=True
+    )
+
     state = fields.Selection([
         ('draft', 'Draft'),
         ('published', 'Published')
@@ -37,12 +43,23 @@ class PowerBIDataset(models.Model):
         deco
         """
         for record in self:
-            color = "#27AE60" if record.state == "published" else "#F39C12"
+            color = "#27AE60" if record.state == "published" else "#E13535"
             label = "Published" if record.state == "published" else "Draft"
             record.decorated_state = Markup(
                 f'<span style="color: white; background-color: {color}; padding: 2px 6px; border-radius: 4px;">{label}</span>')
 
+    @api.depends('state')
+    def _onchange_state(self):
+        if self.state == 'published':
+            self.name = self.name
 
+
+
+    is_readonly = fields.Boolean(compute='_compute_is_readonly', store=False)
+
+    def _compute_is_readonly(self):
+        for record in self:
+            record.is_readonly = record.state == 'published'
     @api.depends('table_ids')
     def _compute_fields(self):
         for record in self:
@@ -125,19 +142,15 @@ class PowerBIDataset(models.Model):
         return True
 
     def action_publish_to_power_bi(self):
-
         _logger.info("Tentative de publication pour le dataset Power BI avec ID '%s'", self.id)
-
 
         connection = self.env['power_bi.connection'].search([], limit=1)
         if not connection:
             raise UserError("Aucune connexion Power BI trouvée.")
 
-
         token = connection.get_access_token()
         if not token:
             raise UserError("Impossible d'obtenir un token d'accès Power BI.")
-
 
         workspace_id = "5240a229-ed55-45a7-a593-b23a4bbea19a"
         url = f'https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/datasets'
@@ -165,6 +178,15 @@ class PowerBIDataset(models.Model):
                         "dataType": "string"
                     })
 
+
+            for field in table.related_field_ids:
+                if field.name not in column_names:
+                    column_names.add(field.name)
+                    columns.append({
+                        "name": field.name,
+                        "dataType": "string"
+                    })
+
             if columns:
                 data["tables"].append({
                     "name": f"Table_{table.id}",
@@ -182,7 +204,6 @@ class PowerBIDataset(models.Model):
 
             # ➕ Message dans le chatter
             self.message_post(body=log_message)
-
 
         else:
             _logger.error("Erreur lors de la publication du dataset Power BI (ID: %d). Code: %d, Message: %s", self.id,

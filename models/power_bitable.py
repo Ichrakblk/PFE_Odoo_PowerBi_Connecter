@@ -28,6 +28,26 @@ class PowerBiTable(models.Model):
         'ir.model.fields', string="Selected Fields",
         domain="[('model_id', 'in', table_ids)]"
     )
+    related_field_ids = fields.Many2many(
+        'ir.model.fields',  # ou un autre modèle
+        'power_bi_table_related_field_rel',  # nom de la table relationnelle
+        'power_bi_table_id',  # colonne correspondant à ce modèle
+        'related_field_id',  # colonne correspondant à l'autre modèle
+        string='Related Fields'
+    )
+
+    @api.depends('merge_table', 'table_ids')
+    def _compute_related_fields(self):
+        for rec in self:
+            if rec.merge_table and rec.table_ids:
+                related_fields = self.env['ir.model.fields'].search([
+                    ('model_id', 'in', rec.table_ids.ids),
+                    ('ttype', 'in', ['many2one', 'one2many', 'many2many'])
+                ])
+                rec.related_field_ids = related_fields
+            else:
+                rec.related_field_ids = [(5, 0, 0)]
+
 
     @api.onchange('table_ids')
     def _onchange_table_ids(self):
@@ -42,6 +62,7 @@ class PowerBiTable(models.Model):
 
     def action_go_to_dataset(self):
         self.ensure_one()
+
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'power_bi.dataset',
@@ -49,5 +70,7 @@ class PowerBiTable(models.Model):
             'target': 'current',
             'context': {
                 'default_table_ids': [(6, 0, [self.id])],
+                'default_related_field_ids': [(6, 0, self.related_field_ids.ids)],
             }
         }
+

@@ -6,67 +6,84 @@
             <kanban class="oe_kanban_global">
                 <templates>
                     <t t-name="kanban-box">
-                        <div class="oe_kanban_card">
-                            <div class="oe_kanban_content" style="display: flex; gap: 30px;">
+                        <div class="oe_kanban_card" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                            <div class="oe_kanban_content" style="display: flex; justify-content: space-between; gap: 30px; padding: 20px;">
 
                                 <!-- Section Workspaces -->
-                                <div class="oe_kanban_column" style="margin-right: 200px; border: 2px solid #007bff; border-radius: 8px; padding: 55px; background-color: #f0f8ff;">
-                                    <div class="o_kanban_record_icon" style="font-size: 120px; color: #007bff; text-align: center; margin-bottom: 2px;">
-                                        <i class="fa fa-cogs"></i>
+                                <div class="oe_kanban_column" style="margin-right: 200px; margin-left: 70px;border: 2px solid #007bff; border-radius: 8px; padding: 70px; background-color: #f0f8ff;">
+                                    <div class="o_kanban_record_icon" style="font-size: 80px; color: #007bff; text-align: center; margin-bottom: 15px;">
+                                        <i class="fa fa-cogs" aria-hidden="true"></i>
                                     </div>
-
-                                    <div class="oe_kanban_title">
-                                        <strong>Workspaces</strong>
+                                    <div class="oe_kanban_title" style="font-size: 30px; color: #333; text-align: center; font-weight: bold;">
+                                        Workspaces 🧑‍💻
                                     </div>
-                                    <div class="oe_kanban_stats">
-                                        <span class="oe_stat_text">Total:</span>
-                                        <span class="oe_stat_value"><field name="workspace_total"/></span>
+                                    <div class="oe_kanban_stats" style="font-size: 20px; text-align: center;">
+                                        <a href="/web#action=531&amp;model=power_bi.workspace&amp;view_type=list&amp;cids=1&amp;menu_id=249" class="oe_stat_link" style="color: inherit; text-decoration: underline;">
+                                            <strong>Total:</strong>
+                                        </a>
+                                        <div class="oe_stat_value" style="color: #007bff; font-size: 30px;">
+                                            <field name="workspace_total"/>
+                                        </div>
                                     </div>
-
                                 </div>
 
                                 <!-- Section Datasets -->
-                                <div class="oe_kanban_column" style="margin-right: 200px; border: 2px solid #28a745; border-radius: 8px; padding: 55px; background-color: #e9f7e9;">
-                                    <div class="o_kanban_record_icon" style="font-size: 120px; color: #007bff; text-align: center; margin-bottom: 2px;">
-                                        <i class="fa fa-database"></i>
+                                <div class="oe_kanban_column" style="margin-right: 200px; border: 2px solid #28a745; border-radius: 8px; padding: 100px; background-color: #e9f7e9;">
+                                    <div class="o_kanban_record_icon" style="font-size: 80px; color: #28a745; text-align: center; margin-bottom: 15px;">
+                                        <i class="fa fa-database" aria-hidden="true"></i>
                                     </div>
-                                    <div class="oe_kanban_title">
-                                        <strong>Datasets</strong>
+                                    <div class="oe_kanban_title" style="font-size: 30px; color: #333; text-align: center; font-weight: bold;">
+                                        Datasets 📊
                                     </div>
-                                    <div class="oe_kanban_stats">
-                                        <span class="oe_stat_text">Total:</span>
-                                        <span class="oe_stat_value"><field name="dataset_total"/></span>
+                                    <div class="oe_kanban_stats" style="font-size: 20px; text-align: center;">
+                                        <a href="/web#action=546&amp;model=power_bi.dataset&amp;view_type=kanban&amp;cids=1&amp;menu_id=250" class="oe_stat_link" style="color: inherit; text-decoration: underline;">
+                                            <strong>Total:</strong>
+                                        </a>
+                                        <div class="oe_stat_value" style="color: #28a745; font-size: 30px;">
+                                            <field name="dataset_total"/>
+                                        </div>
                                     </div>
-                                    <div class="oe_kanban_stats">
-                                        <span class="oe_stat_text">Published:</span>
-                                        <span class="oe_stat_value oe_green"><field name="dataset_published"/></span>
+                                    <div class="oe_kanban_stats" style="font-size: 18px; color: #333;">
+                                        <span style="color: #28a745; font-weight: bold;">Published:</span>
+                                        <span class="oe_stat_value oe_green" style="font-size: 24px;">
+                                            <field name="dataset_published"/>
+                                        </span>
                                     </div>
-                                    <div class="oe_kanban_stats">
-                                        <span class="oe_stat_text">Unpublished:</span>
-                                        <span class="oe_stat_value oe_red"><field name="dataset_unpublished"/></span>
+                                    <div class="oe_kanban_stats" style="font-size: 18px; color: #333;">
+                                        <span style="color: #dc3545; font-weight: bold;">Unpublished:</span>
+                                        <span class="oe_stat_value oe_red" style="font-size: 24px;">
+                                            <field name="dataset_unpublished"/>
+                                        </span>
                                     </div>
                                 </div>
 
                                 <!-- Section Tables -->
-                                <div class="oe_kanban_column" style="margin-right: 20px; border: 2px solid #ffc107; border-radius: 8px; padding: 55px; background-color: #fff3cd;">
-                                    <div class="o_kanban_record_icon" style="font-size: 120px; color: #007bff; text-align: center; margin-bottom: 2px;">
-                                        <i class="fa fa-table"></i>
+                                <div class="oe_kanban_column" style="margin-right: 20px; border: 2px solid #ffc107; border-radius: 8px; padding: 80px; background-color: #fff3cd;">
+                                    <div class="o_kanban_record_icon" style="font-size: 80px; color: #ffc107; text-align: center; margin-bottom: 15px;">
+                                        <i class="fa fa-table" aria-hidden="true"></i>
                                     </div>
-
-                                    <div class="oe_kanban_title">
-                                        <strong>Tables</strong>
+                                    <div class="oe_kanban_title" style="font-size: 30px; color: #333; text-align: center; font-weight: bold;">
+                                        Tables 📑
                                     </div>
-                                    <div class="oe_kanban_stats">
-                                        <span class="oe_stat_text">Total:</span>
-                                        <span class="oe_stat_value"><field name="table_total"/></span>
+                                    <div class="oe_kanban_stats" style="font-size: 20px; text-align: center;">
+                                        <a href="/web#action=547&amp;model=power_bi.table&amp;view_type=list&amp;cids=1&amp;menu_id=379" class="oe_stat_link" style="color: inherit; text-decoration: underline;">
+                                            <strong>Total:</strong>
+                                        </a>
+                                        <div class="oe_stat_value" style="color: #ffc107; font-size: 30px;">
+                                            <field name="table_total"/>
+                                        </div>
                                     </div>
-                                    <div class="oe_kanban_stats">
-                                        <span class="oe_stat_text">Published:</span>
-                                        <span class="oe_stat_value oe_green"><field name="table_published"/></span>
+                                    <div class="oe_kanban_stats" style="font-size: 18px; color: #333;">
+                                        <span style="color: #28a745; font-weight: bold;">Published:</span>
+                                        <span class="oe_stat_value oe_green" style="font-size: 24px;">
+                                            <field name="table_published"/>
+                                        </span>
                                     </div>
-                                    <div class="oe_kanban_stats">
-                                        <span class="oe_stat_text">Unpublished:</span>
-                                        <span class="oe_stat_value oe_red"><field name="table_unpublished"/></span>
+                                    <div class="oe_kanban_stats" style="font-size: 18px; color: #333;">
+                                        <span style="color: #dc3545; font-weight: bold;">Unpublished:</span>
+                                        <span class="oe_stat_value oe_red" style="font-size: 24px;">
+                                            <field name="table_unpublished"/>
+                                        </span>
                                     </div>
                                 </div>
 
