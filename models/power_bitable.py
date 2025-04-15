@@ -36,6 +36,7 @@ class PowerBiTable(models.Model):
         string='Related Fields'
     )
 
+
     @api.depends('merge_table', 'table_ids')
     def _compute_related_fields(self):
         for rec in self:

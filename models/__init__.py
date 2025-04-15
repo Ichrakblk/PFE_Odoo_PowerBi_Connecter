@@ -8,3 +8,4 @@ from . import power_bi_table_field
 from . import dashbord
 from . import job
 from . import log_message
+from . import power_bireport

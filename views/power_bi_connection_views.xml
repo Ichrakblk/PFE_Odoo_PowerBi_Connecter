@@ -12,6 +12,7 @@
 
                 <sheet>
                     <group string="Connection Details" col="2">
+
                         <field name="name" readonly="state == 'connected'" placeholder="e.g., My Power BI Connection"/>
                         <field name="tenant_id" readonly="state == 'connected'" placeholder="Enter Tenant ID"/>
                         <field name="client_id" readonly="state == 'connected'" placeholder="Enter Client ID"/>
@@ -19,7 +20,7 @@
                     </group>
 
                     <group>
-                        <button name="action_test_connection" type="object" string="🔄 Test Connection" class="oe_highlight" icon="fa-plug"/>
+                        <button name="action_test_connection" type="object" string="🔄 Test Connection" class="oe_highlight" />
                     </group>
 
                     <div class="oe_button_box" name="button_box">

@@ -16,6 +16,7 @@ class PowerBIWorkspace(models.Model):
         ('published', 'Published'),
         ('archived', 'Archived'),
     ], default='draft', string="State")
+    report_ids = fields.One2many('power_bi.report', 'workspace_id', string="Reports")
 
     @api.onchange('connection_id')
     def _onchange_connection_id(self):

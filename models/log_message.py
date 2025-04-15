@@ -16,15 +16,15 @@ class LogMessage(models.Model):
     ], string="Message Type", required=True, default='success')
     log_message = fields.Text(string="Log Message", required=True)
 
-    # Champ pour stocker le fichier PDF
+
     pdf_file = fields.Binary(string="PDF File", attachment=True)
 
-    # Champ pour afficher l'URL du PDF dans le formulaire
+
     pdf_url = fields.Char(string="PDF URL")
 
     @api.model
     def create(self, vals):
-        # Créer l'enregistrement et calculer l'URL du PDF
+
         record = super(LogMessage, self).create(vals)
 
         return record

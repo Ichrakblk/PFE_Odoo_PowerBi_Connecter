@@ -18,7 +18,7 @@
         <form string="📥 Message de Log" class="o_form_sheet_bg">
             <header>
                 <button name="action_download_report"
-                        string="⬇️ Télécharger le rapport"
+                        string="⬇️ Download the report"
                         type="object" class="oe_highlight"
                         />
             </header>

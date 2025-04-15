@@ -26,6 +26,7 @@
                     <div style="margin-top: 10px;">
                         <field name="decorated_state" widget="html"/>
                     </div>
+
                 </div>
             </div>
         </t>
@@ -40,7 +41,7 @@
         <field name="name">power.bi.dataset.form</field>
         <field name="model">power_bi.dataset</field>
         <field name="arch" type="xml">
-            <form string="Jeu de données Power BI">
+            <form string="Dataset PowerBI">
     <header>
         <button name="action_publish_to_power_bi"
                 type="object"
@@ -92,7 +93,7 @@
             </page>
         </notebook>
 
-        <div class="oe_button_box" name="button_box" style="margin-top: 20px;">
+        <div class="oe_button_box" name="button_box" >
             <button class="oe_stat_button" type="object" name="action_show_tables" icon="fa-table">
                 <field name="table_ids" widget="statinfo" string="Tables"/>
             </button>

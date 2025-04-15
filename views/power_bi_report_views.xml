@@ -1,0 +1,49 @@
+<odoo>
+    <record id="view_power_bi_report_form" model="ir.ui.view">
+        <field name="name">power_bi.report.form</field>
+        <field name="model">power_bi.report</field>
+        <field name="arch" type="xml">
+            <form string="Rapport Power BI">
+
+                    <header class="custom_header_style">
+                        <div class="row">
+                            <div class="col-4">
+                                <label for="name" class="col-form-label">Rapport Name</label>
+                                <field name="name"/>
+                            </div>
+                            <div class="col-4">
+                                <label for="workspace_id" class="col-form-label">Workspace</label>
+                                <field name="workspace_id" options="{'no_create': True}" on_change="1"/>
+                            </div>
+                            <div class="col-4">
+                                <label for="report_id" class="col-form-label">Selection Rapport</label>
+                                <field name="report_id" widget="selection"/>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="report_url" class="col-form-label">Rapport URL</label>
+                                <field name="report_url"/>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div class="o_row mt-4">
+                        <div class="col-12">
+                            <field name="report_embed"/>
+                        </div>
+                    </div>
+
+            </form>
+        </field>
+    </record>
+
+    <record id="action_power_bi_report" model="ir.actions.act_window">
+        <field name="name">Rapports Power BI</field>
+        <field name="res_model">power_bi.report</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p>Créer et gérer vos rapports Power BI ici.</p>
+        </field>
+    </record>
+</odoo>

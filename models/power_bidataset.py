@@ -169,7 +169,6 @@ class PowerBIDataset(models.Model):
             column_names = set()
             columns = []
 
-
             for field in table.selected_field_ids:
                 if field.name not in column_names:
                     column_names.add(field.name)
@@ -177,7 +176,6 @@ class PowerBIDataset(models.Model):
                         "name": field.name,
                         "dataType": "string"
                     })
-
 
             for field in table.related_field_ids:
                 if field.name not in column_names:

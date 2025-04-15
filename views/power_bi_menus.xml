@@ -17,4 +17,10 @@
 
 
     <menuitem id="menu_powerbi_log" parent="menu_powerbi" name="Log Message" action="action_log_message"/>
+
+
+
+
+    <menuitem id="menu_power_bi_report" name="Rapports Power BI" parent="menu_powerbi_root" action="action_power_bi_report" />
+
 </odoo>

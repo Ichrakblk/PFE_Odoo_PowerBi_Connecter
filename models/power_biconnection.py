@@ -22,9 +22,11 @@ class PowerBIConnection(models.Model):
     workspace_ids = fields.One2many('power_bi.workspace', 'connection_id', string="Workspaces")
     workspace_name = fields.Char(string="Workspace Name")
 
+
+
     def _compute_workspace_count(self):
         for record in self:
-            record.workspace_count = 0  # Valeur par défaut
+            record.workspace_count = 0
 
     def get_access_token(self):
         url = f'https://login.microsoftonline.com/{self.tenant_id}/oauth2/v2.0/token'
@@ -50,7 +52,7 @@ class PowerBIConnection(models.Model):
         if response.status_code == 200:
             workspaces = response.json().get('value', [])
             if workspaces:
-                # Vérification du workspace_name
+
                 first_workspace_name = workspaces[0].get('name')
                 if first_workspace_name:
                     return len(workspaces), first_workspace_name
