@@ -1,0 +1,327 @@
+:root {
+    --powerbi-yellow: #F2C811;
+    --powerbi-dark: #1e1e2e;
+    --powerbi-light: #f8f9fa;
+    --powerbi-gray: #d4d4d8;
+    --text-dark: #2c2c2c;
+    --font-main: 'Poppins', sans-serif;
+    --font-size-main: 16px;
+}
+
+/* Polices globales */
+body, .o_main_navbar, .o_list_view, .o_form_view {
+    font-family: var(--font-main) !important;
+    font-size: var(--font-size-main) !important;
+    line-height: 1.5;
+}
+
+.o_main_navbar {
+/* === Barre du haut (menu principal) === */
+    background: linear-gradient(to bottom right, #AEA47D, #F2C811) !important;
+    color: #fff8dc !important;
+    height: 65px !important;
+    line-height: 70px;
+    padding-top: 10px;
+     padding-bottom: 15px;
+    font-family: var(--font-main);
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border-bottom: none !important;
+}
+
+
+/* Logo et menu principal */
+.o_main_navbar .o_menu_brand {
+    color:  #fdf5e6  !important;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* === Menu principal === */
+.o_main_navbar .o_menu_entry_lvl_1 {
+    color: #fdf5e6 !important;
+}
+
+.o_main_navbar .o_user_menu > li > a,
+.o_main_navbar .o_menu_systray > li > a {
+    color: #fdf5e6 !important;
+}
+
+/* Dropdowns */
+.o_main_navbar .o_menu_sections .dropdown-item {
+    color:  #fdf5e6  !important;
+}
+
+.o_main_navbar .o_menu_sections .dropdown-item:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Menu secondaire */
+.o_menu_sections .o_nav_entry {
+    background: transparent !important;
+    color: #fdf5e6 !important;
+    font-weight: bold !important;
+    border-radius: 1px;
+    margin-right: 5px;
+    padding: 6px 14px;
+    transition: background-color 0.2s ease;
+}
+
+
+.o_menu_sections .o_nav_entry:hover {
+    background-color: #e6b800 !important;
+    color:  #fdf5e6  !important;
+}
+
+.o_menu_sections .o_nav_entry.active,
+.o_menu_sections .o_nav_entry:focus,
+.o_menu_sections .o_nav_entry:active {
+    background: linear-gradient(to bottom right, #FAECB3, #F2C811) !important;
+    color:  #fdf5e6  !important;
+    box-shadow: inset 0 -2px 0 white !important;
+}
+
+/* Style bouton "Configuration" */
+.o_menu_sections .dropdown-toggle {
+    background: transparent !important;
+    color:  #fdf5e6  !important;
+    font-weight: bold !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    transition: background-color 0.2s ease;
+}
+
+/* Hover bouton "Configuration" */
+.o_menu_sections .dropdown-toggle:hover {
+    background-color: #e6b800 !important;
+    color:  #fdf5e6  !important;
+}
+
+/* Bouton actif/focus */
+.o_menu_sections .dropdown-toggle:focus,
+.o_menu_sections .dropdown-toggle:active {
+    background-color: var(--powerbi-yellow) !important;
+    color:  #fdf5e6  !important;
+    box-shadow: inset 0 -2px 0 white !important;
+}
+
+/* === Table view modernisée === */
+.o_list_view table tbody tr {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 10px;
+  width: 300%;
+  padding: 0 10px;
+}
+
+.o_list_view table tbody td {
+  border: none !important;
+  padding: 14px 12px;
+  vertical-align: middle;
+  font-family: 'Inter', sans-serif;
+  width: 300%;
+  color: #333;
+}
+
+.o_list_view table {
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  background: transparent;
+}
+
+/* Bouton "New" rouge */
+.o_list_button_add {
+  background-color: #f04e4e !important;
+  color: #fff !important;
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Badge de statut vert */
+.badge,
+.o_badge_cell span {
+  background-color: #2ecc71 !important;
+  color: #fff !important;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.o_list_view table thead tr {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  width: 300%;
+}
+
+.o_list_view table thead th {
+  width: 300%;
+  padding: 14px 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: #888;
+  background: transparent;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+
+/* === Modern Form View === */
+.o_form_view {
+    background-color: var(--powerbi-light);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    font-family: var(--font-main);
+}
+
+/* Groupes de formulaire */
+.o_form_view .o_group {
+    background-color: white;
+    padding: 24px 30px;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+    border-left: 5px solid var(--powerbi-yellow);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Titre des groupes */
+.o_form_view .o_group .o_group_name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--powerbi-dark);
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e4e4e4;
+    padding-bottom: 10px;
+}
+
+/* Champs du formulaire */
+.o_form_view .o_td_label {
+    color: var(--text-dark);
+    font-weight: 600;
+    font-size: 14px;
+    padding-bottom: 6px;
+    text-transform: capitalize;
+
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    color: #333;
+    padding: 10px 0;
+    background-color: var(--powerbi-light);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+
+.o_form_view .o_td_value {
+    border: none !important;
+    padding: 10px 14px;
+    background-color: #fff;
+    color: var(--text-dark);
+    box-shadow: none !important;
+}
+
+.o_field_widget {
+    border: none !important;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 15px;
+    transition: box-shadow 0.2s;
+}
+
+
+.o_field_widget:focus,
+.o_field_widget:focus-within {
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.o_form_button_save,
+.o_form_button_edit,
+.o_form_button_cancel {
+    background: var(--powerbi-yellow);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    margin-right: 10px;
+}
+
+
+.o_form_button_save:hover,
+.o_form_button_edit:hover,
+.o_form_button_cancel:hover {
+    background-color: #e6b800;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+}
+
+
+@media (max-width: 768px) {
+    .o_form_view .o_group {
+        padding: 20px;
+    }
+
+    .o_form_button_save,
+    .o_form_button_edit,
+    .o_form_button_cancel {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* === Buttons === */
+.o_form_button_save,
+.o_form_button_edit,
+.o_form_button_cancel {
+    background:  #fdf5e6 ;
+    color: var(--powerbi-yellow);
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.o_form_button_save:hover,
+.o_form_button_edit:hover,
+.o_form_button_cancel:hover {
+    background: #333;
+    color: white;
+}
+
+/* Style global pour tous les boutons dans les vues Odoo */
+.o_form_view button,
+.o_list_view button,
+.o_form_button_save,
+.o_form_button_edit,
+.o_form_button_cancel,
+.o_list_button_add {
+  background-color: #f04e4e;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.o_form_view button:hover,
+.o_list_view button:hover,
+.o_form_button_save:hover,
+.o_form_button_edit:hover,
+.o_form_button_cancel:hover,
+.o_list_button_add:hover {
+  background-color: #e04e4e;
+}

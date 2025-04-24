@@ -10,7 +10,7 @@ class PowerBIReport(models.Model):
     _name = 'power_bi.report'
     _description = 'Rapport Power BI'
 
-    name = fields.Char(string="Nom")
+    name = fields.Char(string="Name")
     workspace_id = fields.Many2one('power_bi.workspace', string="Workspace", required=True)
     dataset_id = fields.Many2one('power_bi.dataset', string="Dataset Power BI")
 
@@ -26,6 +26,13 @@ class PowerBIReport(models.Model):
     )
     dataset_id_display = fields.Char(string="ID Dataset (Power BI)", readonly=True)
     embed_url = fields.Char("URL d'intégration", readonly=True)
+    has_multiple_reports = fields.Boolean(string="Plusieurs rapports ?", compute="_compute_multiple_reports",
+                                          store=True)
+
+    @api.depends('available_report_ids')
+    def _compute_multiple_reports(self):
+        for rec in self:
+            rec.has_multiple_reports = len(rec.available_report_ids) > 1
 
     @api.onchange('workspace_id', 'dataset_id')
     def _onchange_workspace_id(self):
@@ -142,14 +149,14 @@ class PowerBIReport(models.Model):
     def _get_access_token(self):
         tenant_id = 'a079a463-30e0-4530-a231-576caa0508bc'
         client_id = '84220ff8-fe80-40db-a7ae-111af1de085f'
-        #client_secret = '8Ei8Q~Id5c~sABXw3m90Z.a2lbL3rmgkAWPrlbUb'
+        client_secret = '8Ei8Q~Id5c~sABXw3m90Z.a2lbL3rmgkAWPrlbUb'
 
         url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         data = {
             'grant_type': 'client_credentials',
             'client_id': client_id,
-            #"'client_secret': client_secret,
+            'client_secret': client_secret,
             'scope': 'https://analysis.windows.net/powerbi/api/.default'
         }
 
@@ -298,4 +305,3 @@ class PowerBIReport(models.Model):
                 record.report_embed = Markup(iframe_html)
             else:
                 record.report_embed = False
-

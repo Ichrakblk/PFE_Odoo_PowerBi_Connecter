@@ -1,12 +1,11 @@
 {
     'name': 'Power BI Connector',
     'version': '1.0',
-    'depends': ['base','mail'],
+    'depends': ['base', 'mail', 'web'],
     'data': [
         'views/powerbi_connector_views.xml',
         'data/cron_jobs.xml',
         'views/power_bi_connection_views.xml',
-
         'views/power_bi_workspace_views.xml',
         'views/power_bi_workspacetemp.xml',
         'views/power_bi_dataset_views.xml',
@@ -17,12 +16,13 @@
         'views/log_message.xml',
         'views/power_bi_report_views.xml',
         'views/power_bi_menus.xml',
-
         'security/ir.model.access.csv',
     ],
-
-
-
+    'assets': {
+        'web.assets_backend': [
+            'custom_powerbi_connector/static/src/css/theme_backend.css',
+        ],
+    },
     'installable': True,
     'application': True,
 }

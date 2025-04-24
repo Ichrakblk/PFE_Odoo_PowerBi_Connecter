@@ -12,7 +12,7 @@
     <field name="decorated_state" widget="html"/>
     <templates>
         <t t-name="kanban-box">
-            <div t-attf-class="oe_kanban_global_click o_kanban_card" style="background: linear-gradient(to bottom right, #f0f4ff, #e3f2fd); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div t-attf-class="oe_kanban_global_click o_kanban_card" style="background: linear-gradient(to bottom right, #FAECB3, #e3f2fd); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <div style="text-align: center;">
                     <div class="o_kanban_record_icon" style="font-size: 45px; color: #0056b3;">
                         <i class="fa fa-database"/>

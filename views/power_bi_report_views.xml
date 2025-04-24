@@ -1,80 +1,87 @@
 <odoo>
+    <!-- Vue Formulaire -->
     <record id="view_power_bi_report_form" model="ir.ui.view">
         <field name="name">power_bi.report.form</field>
         <field name="model">power_bi.report</field>
         <field name="arch" type="xml">
-            <form string="Rapport Power BI">
+            <form string="Power BI report">
                 <header>
-
+                    <xpath expr="//form/sheet" position="inside">
+    <div invisible="has_multiple_reports != True" class="alert alert-danger">
+        <span class="fa fa-exclamation-triangle text-danger"/>
+        <strong> Warning: </strong> This dataset has several reports !
+    </div>
+</xpath>
                 </header>
-
                 <sheet>
                     <div style="display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; min-height: 700px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-
-                        <div style="flex: 1; min-width: 300px;  background-image: url('/custom_powerbi_connector/static/src/image/images-removebg-preview (2).png');  background-size: 300px 200px;
-    background-repeat: no-repeat;
-    background-position: center;background-color: #FDF6E3; padding: 25px; border-radius: 12px; border: 1px solid #ddd;">
+                        <!-- Colonne gauche -->
+                        <div style="flex: 1; min-width: 300px; background-image: url('/custom_powerbi_connector/static/src/image/images-removebg-preview (2).png'); background-size: 300px 200px; background-repeat: no-repeat; background-position: center; background-color: #FDF6E3; padding: 25px; border-radius: 12px; border: 1px solid #ddd;">
                             <h2 style="margin-bottom: 50px; color: #4a4a4a; display: flex; align-items: center; gap: 10px;">
-    <img src="/custom_powerbi_connector/static/src/image/images-removebg-preview (2).png" style="height: 30px;" alt="Power BI"/>
-    Configuration
-</h2>
+                                <img src="/custom_powerbi_connector/static/src/image/images-removebg-preview (2).png" style="height: 30px;" alt="Power BI"/>
+                                Configuration
+                            </h2>
                             <group col="1">
-                                <field name="name" nolabel="0"/>
-                                <field name="workspace_id" nolabel="0" options="{'no_create': True}" on_change="1"/>
+                                <field name="name"/>
+                                <field name="workspace_id" options="{'no_create': True}" on_change="1"/>
                                 <field name="dataset_id" domain="[('workspace_id', '=', workspace_id)]" options="{'no_create': True}" />
-                               <field name="available_report_ids" widget="many2many_tags" domain="[('id', 'in', available_report_ids)]"/>
+                                <field name="available_report_ids" widget="many2many_tags" domain="[('id', 'in', available_report_ids)]"/>
                                 <field name="selected_report_choice" domain="[('id', 'in', available_report_ids)]" invisible="1"/>
-
                                 <field name="report_id" invisible="1"/>
-
+                                <field name="has_multiple_reports" invisible="1"/>
 
                             </group>
+
                             <div style="margin-left:30px">
- <button
-        name="action_create_report_lines"
-        string="🟨 Show Report Power BI"
-        type="object"
-        style="
-            background-color: #f2c811;
-            color: #000000;
-            font-weight: bold;
-            font-size: 18px;
-            padding: 16px;
-            border-radius: 12px;
-            border: none;
-            width: 100%;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-        "
-        onmouseover="this.style.backgroundColor='#d4ac0d';"
-        onmouseout="this.style.backgroundColor='#f2c811';"
-    />
+                                <button
+                                    name="action_create_report_lines"
+                                    string="🟨 Show Report Power BI"
+                                    type="object"
+                                    style="background-color: #f2c811; color: #000000; font-weight: bold; font-size: 18px; padding: 16px; border-radius: 12px; border: none; width: 100%; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s ease;"
+                                    onmouseover="this.style.backgroundColor='#d4ac0d';"
+                                    onmouseout="this.style.backgroundColor='#f2c811';"
+                                />
                             </div>
                         </div>
 
                         <!-- Colonne droite -->
                         <div style="flex: 2; min-width: 500px; background-color: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #ddd;">
-                            <h2 style="margin-bottom: 20px; color: #4a4a4a;">
-                                📊 Aperçu du Rapport
-                            </h2>
+                            <h2 style="margin-bottom: 20px; color: #4a4a4a;">📊 Report Overview</h2>
                             <group col="1">
                                 <field name="report_embed" widget="html" style="min-height: 600px; width: 100%; border: 1px solid #ccc; border-radius: 8px;"/>
                             </group>
                         </div>
-
                     </div>
                 </sheet>
             </form>
         </field>
     </record>
 
+  <record id="view_power_bi_report_tree" model="ir.ui.view">
+    <field name="name">power_bi.report.tree</field>
+    <field name="model">power_bi.report</field>
+    <field name="arch" type="xml">
+        <tree string="🌟 Power BI Reports" decoration-success="dataset_id" decoration-muted="not dataset_id">
+
+            <field name="name" string="📊 Report"/>
+            <field name="workspace_id" string="🏢 Workspace"/>
+            <field name="dataset_id" string="🗂️ Dataset"/>
+
+            <field name="create_date" string="📅 Created on"/>
+        </tree>
+    </field>
+</record>
+
+
+
+    <!-- Action de menu -->
     <record id="action_power_bi_report" model="ir.actions.act_window">
-        <field name="name">Rapports Power BI</field>
+        <field name="name">Power BI Reports</field>
         <field name="res_model">power_bi.report</field>
         <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p style="font-size: 14px; color: #666;">Créer et gérer vos rapports Power BI ici. Visualisez-les en toute simplicité dans une interface moderne.</p>
         </field>
     </record>
+
 </odoo>

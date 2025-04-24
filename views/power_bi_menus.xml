@@ -21,6 +21,6 @@
 
 
 
-    <menuitem id="menu_power_bi_report" name="Rapports Power BI" parent="menu_powerbi_root" action="action_power_bi_report" />
+    <menuitem id="menu_power_bi_report" name="Power BI Reports" parent="menu_powerbi_root" action="action_power_bi_report" />
 
 </odoo>
