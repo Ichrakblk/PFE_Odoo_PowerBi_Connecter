@@ -1,138 +1,301 @@
 from odoo import models, fields, api
-import logging
 import requests
+import logging
+from markupsafe import Markup
 
 _logger = logging.getLogger(__name__)
+
 
 class PowerBIReport(models.Model):
     _name = 'power_bi.report'
     _description = 'Rapport Power BI'
 
-    name = fields.Char(string="Name")
-    workspace_id = fields.Many2one('power_bi.workspace', string="Workspace")
-    report_id = fields.Selection(
-        selection='_get_report_selection',
-        string="Rapport Power BI"
+    name = fields.Char(string="Nom")
+    workspace_id = fields.Many2one('power_bi.workspace', string="Workspace", required=True)
+    dataset_id = fields.Many2one('power_bi.dataset', string="Dataset Power BI")
+
+    report_id = fields.Char(string="ID Rapport Power BI")  # ID réel
+    report_url = fields.Char(string="URL Rapport", compute="_compute_report_url")
+    report_embed = fields.Html(string=".", compute="_compute_report_embed", sanitize=False)
+
+    # Nouveau : ligne vers un modèle contenant les rapports disponibles
+    available_report_ids = fields.One2many(
+        'power_bi.report.choice', 'report_main_id', string="Available Reports ", store=True)
+    selected_report_choice = fields.Many2one(
+        'power_bi.report.choice', string="Rapport Sélectionné"
     )
+    dataset_id_display = fields.Char(string="ID Dataset (Power BI)", readonly=True)
+    embed_url = fields.Char("URL d'intégration", readonly=True)
 
-    report_url = fields.Char(string="URL  Rapport", compute="_compute_report_url", store=False)
-    report_embed = fields.Html(string="Aperçu Rapport", compute="_compute_report_embed", sanitize=False)
+    @api.onchange('workspace_id', 'dataset_id')
+    def _onchange_workspace_id(self):
+        """Quand on change de workspace ou de dataset, on recharge uniquement les rapports associés au dataset sélectionné"""
+        self.available_report_ids = [(5, 0, 0)]  # Vider la liste des rapports
+        self.selected_report_choice = False
 
-    @api.model
-    def _get_access_token(self):
-        # Token fourni pour l'accès à l'API Power BI
-       return "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkNOdjBPSTNSd3FsSEZFVm5hb01Bc2hDSDJYRSIsImtpZCI6IkNOdjBPSTNSd3FsSEZFVm5hb01Bc2hDSDJYRSJ9.eyJhdWQiOiJodHRwczovL2FuYWx5c2lzLndpbmRvd3MubmV0L3Bvd2VyYmkvYXBpIiwiaXNzIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvYTA3OWE0NjMtMzBlMC00NTMwLWEyMzEtNTc2Y2FhMDUwOGJjLyIsImlhdCI6MTc0NDcyMjUzMiwibmJmIjoxNzQ0NzIyNTMyLCJleHAiOjE3NDQ3MjY0MzIsImFpbyI6ImsyUmdZTmg5YmZNYTlRMmFONXg4NTN0cG5DdUlCQUE9IiwiYXBwaWQiOiI4NDIyMGZmOC1mZTgwLTQwZGItYTdhZS0xMTFhZjFkZTA4NWYiLCJhcHBpZGFjciI6IjEiLCJpZHAiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC9hMDc5YTQ2My0zMGUwLTQ1MzAtYTIzMS01NzZjYWEwNTA4YmMvIiwiaWR0eXAiOiJhcHAiLCJvaWQiOiJhNWQ1ZjIxYS01YTNjLTRjNzMtOGEzMi01NWIyNzAxZWRjYTciLCJyaCI6IjEuQVlJQVk2UjVvT0F3TUVXaU1WZHNxZ1VJdkFrQUFBQUFBQUFBd0FBQUFBQUFBQUNWQUFDQ0FBLiIsInJvbGVzIjpbIlRlbmFudC5SZWFkV3JpdGUuQWxsIiwiVGVuYW50LlJlYWQuQWxsIl0sInN1YiI6ImE1ZDVmMjFhLTVhM2MtNGM3My04YTMyLTU1YjI3MDFlZGNhNyIsInRpZCI6ImEwNzlhNDYzLTMwZTAtNDUzMC1hMjMxLTU3NmNhYTA1MDhiYyIsInV0aSI6InhRLWpTeHdFMkUyUDhXd24ySGxCQUEiLCJ2ZXIiOiIxLjAiLCJ4bXNfaWRyZWwiOiI3IDgifQ.A4lK-WXq3qpThcGjx8sYp2qDlMl-fvHmlq5fdwzqcYHn7y7XRU7-8HZ6egiogie7GJPGFOkRoBvACsF1-CWk0_yYqsCtdC7QjLfXPD6q3bqn7gc_xrMyZMjTY-hq1ZJHTuAEZLcdILtQf5RSx9A9daCcvbWIcWn4BQziY6GRYIBJCdtho65isYRms0fUFQe1bmybotmfGhISnwEfUpsB_AQm1KoCmdMrE3xoTH06DmWnc_uWH6KNpHTkJoMOwV31pp5CrbylZqtpwLvdAkq2gjykls-qA872L8i2QbfmjCYpkJ6LpqZJjPeeGG2lvRuf7SPnKEC5L6X89wSJB8XjKQ"
+        if not self.workspace_id or not self.dataset_id:
+            return
+
+        selected_dataset_name = self.dataset_id.name
+        _logger.info("🔎 Dataset sélectionné : %s", selected_dataset_name)
+
+        dataset_info = self.get_all_dataset_ids(self.workspace_id.workspace_id)
+
+        selected_dataset_id = None
+        for ds_id, ds_name in dataset_info:
+            if ds_name == selected_dataset_name:
+                selected_dataset_id = ds_id
+                break
+
+        if selected_dataset_id:
+            _logger.info("📊 Dataset trouvé avec l'ID : %s", selected_dataset_id)
+
+            rapports = self.get_reports_by_dataset(self.workspace_id.workspace_id)
+
+            reports_for_selected_dataset = rapports.get(selected_dataset_id, [])
+
+            if reports_for_selected_dataset:
+                _logger.info("📋 Rapports associés au dataset %s :", selected_dataset_id)
+
+                report_lines = []
 
 
-    def update_report_selection(self, options):
-        """Met à jour dynamiquement la sélection des rapports."""
-        _logger.debug("Mise à jour de la sélection des rapports avec %d options.", len(options))
-        # Utilisation du champ 'report_id' pour définir les options de sélection
-        self.write({'report_id': False})  # Réinitialiser report_id si nécessaire
-        # Met à jour le domaine des rapports
-        self.fields_get()['report_id']['selection'] = options
-        # Redéfinir les domaines si nécessaire pour garantir une mise à jour correcte
-        self.env.context = dict(self.env.context, report_id_domain=[("id", "in", [r[0] for r in options])])
 
-    @api.depends('report_id', 'workspace_id')
+
+
+
+            else:
+                _logger.warning("⚠️ Aucun rapport trouvé pour le dataset sélectionné.")
+        else:
+            _logger.warning("⚠️ Le dataset sélectionné n'a pas été trouvé dans Power BI.")
+
+    def action_create_report_lines(self):
+        """
+        Méthode pour générer et enregistrer les lignes de rapports
+        disponibles en fonction du workspace_id et dataset_id.
+        """
+        if not self.workspace_id or not self.dataset_id:
+            return
+
+        selected_dataset_name = self.dataset_id.name
+        _logger.info("🔎 Dataset sélectionné : %s", selected_dataset_name)
+
+        dataset_info = self.get_all_dataset_ids(self.workspace_id.workspace_id)
+
+        selected_dataset_id = None
+        for ds_id, ds_name in dataset_info:
+            if ds_name == selected_dataset_name:
+                selected_dataset_id = ds_id
+                break
+
+        if selected_dataset_id:
+            _logger.info("📊 Dataset trouvé avec l'ID : %s", selected_dataset_id)
+
+            rapports = self.get_reports_by_dataset(self.workspace_id.workspace_id)
+
+            reports_for_selected_dataset = rapports.get(selected_dataset_id, [])
+
+            if reports_for_selected_dataset:
+                _logger.info("📋 Rapports associés au dataset %s :", selected_dataset_id)
+
+                report_lines = []
+
+                for report_id, report_name in reports_for_selected_dataset:
+                    _logger.info("    🔸 Report: %s (ID: %s)", report_name, report_id)
+
+                    ctid = "a079a463-30e0-4530-a231-576caa0508bc"
+                    embed_url = f"https://app.powerbi.com/reportEmbed?reportId={report_id}&autoAuth=true&ctid={ctid}"
+                    _logger.info("🔗 URL Power BI générée : %s", embed_url)
+                    self.embed_url = embed_url
+                    report_embed = f'''
+                                           <iframe title="Power BI Report" 
+                                                   width="100%" 
+                                                   height="600" 
+                                                   src="{embed_url}" 
+                                                   frameborder="0" 
+                                                   allowFullScreen="true">
+                                           </iframe>
+                                       '''
+
+                    report_lines.append((0, 0, {
+                        'report_id': report_id,
+                        'name': report_name,
+                        'report_embed': report_embed
+                    }))
+
+                self.write({'available_report_ids': report_lines})
+                _logger.info("✅ Lignes de rapports créées et enregistrées.")
+
+    @api.depends('selected_report_choice', 'workspace_id')
     def _compute_report_url(self):
         for rec in self:
-            if rec.report_id and rec.workspace_id:
-                # L'URL correcte selon le format attendu
-                rec.report_url = f"https://app.powerbi.com/groups/{rec.workspace_id.workspace_id}/reports/{rec.report_id}/{rec.report_id}?experience=power-bi"
-                _logger.debug("URL du rapport générée : %s", rec.report_url)
+            if rec.selected_report_choice and rec.workspace_id:
+                rec.report_url = f"https://app.powerbi.com/groups/{rec.workspace_id.workspace_id}/reports/{rec.selected_report_choice.report_id}?experience=power-bi"
             else:
                 rec.report_url = ''
-                _logger.debug("Aucune URL générée, report_id ou workspace_id manquant.")
 
-    @api.depends('report_id')
+    def action_test_report_embed(self):
+
+        self._compute_report_embed()
+        _logger.info("✅ Méthode _compute_report_embed exécutée via le bouton")
+
+    def _get_access_token(self):
+        tenant_id = 'a079a463-30e0-4530-a231-576caa0508bc'
+        client_id = '84220ff8-fe80-40db-a7ae-111af1de085f'
+        client_secret = '8Ei8Q~Id5c~sABXw3m90Z.a2lbL3rmgkAWPrlbUb'
+
+        url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        data = {
+            'grant_type': 'client_credentials',
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'scope': 'https://analysis.windows.net/powerbi/api/.default'
+        }
+
+        response = requests.post(url, headers=headers, data=data)
+        response_data = response.json()
+        access_token = response_data.get('access_token')
+
+        if not access_token:
+            _logger.error("❌ Échec de l'obtention du token : %s", response_data)
+        return access_token
+
+    @api.onchange('selected_report_choice')
+    def _onchange_selected_report_choice(self):
+        if self.selected_report_choice:
+            access_token = self._get_access_token()
+            workspace_id = self.workspace_id.workspace_id
+            report_id = self.selected_report_choice.report_id
+
+            url = f"https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/reports/{report_id}"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {access_token}'
+            }
+
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                report = response.json()
+                dataset_id = report.get('datasetId')
+                self.dataset_id_display = dataset_id
+                _logger.info("✅ Dataset ID récupéré depuis Power BI : %s", dataset_id)
+
+
+                self.name = self.selected_report_choice.report_name
+                _logger.info("✅ Nom du rapport mis à jour : %s", self.name)
+
+                self.report_url = f"https://app.powerbi.com/groups/{workspace_id}/reports/{report_id}?experience=power-bi"
+            else:
+                _logger.error("❌ Impossible de récupérer le datasetId depuis Power BI : %s", response.text)
+                self.report_url = ''
+        else:
+            self.dataset_id_display = ''
+            self.report_url = ''
+
+    def get_all_dataset_ids(self, workspace_id):
+        """
+        Récupérer tous les datasetId et leurs noms pour un workspace Power BI spécifique.
+        """
+        access_token = self._get_access_token()
+        url = f"https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/datasets"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {access_token}'
+        }
+
+        response = requests.get(url, headers=headers)
+        dataset_info = []
+
+        if response.status_code == 200:
+            datasets = response.json().get('value', [])
+            for ds in datasets:
+                dataset_id = ds.get("id")
+                dataset_name = ds.get("name")
+                if dataset_id and dataset_name:
+                    dataset_info.append((dataset_id, dataset_name))
+                    _logger.debug("✅ Dataset : %s (%s)", dataset_name, dataset_id)
+        else:
+            _logger.error("❌ Erreur lors de la récupération des datasets depuis Power BI : %s", response.text)
+
+        return dataset_info
+
+    def action_get_dataset_ids(self):
+
+        if self.workspace_id:
+            dataset_info = self.get_all_dataset_ids(self.workspace_id.workspace_id)
+            if dataset_info:
+
+                dataset_display = ', '.join([f"{name} ({dataset_id})" for dataset_id, name in dataset_info])
+                self.dataset_id_display = dataset_display
+                _logger.info("✅ DatasetIds et noms récupérés et affichés : %s", dataset_display)
+            else:
+                self.dataset_id_display = 'Aucun dataset trouvé.'
+                _logger.info("❌ Aucun dataset trouvé pour le workspace.")
+        else:
+            self.dataset_id_display = 'Workspace non défini.'
+            _logger.error("❌ Workspace non défini.")
+
+    def get_reports_by_dataset(self, workspace_id):
+
+        access_token = self._get_access_token()
+
+        datasets = self.get_all_dataset_ids(workspace_id)
+        dataset_ids = [ds_id for ds_id, _ in datasets]
+
+        reports_by_dataset = {}
+
+        url = f"https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/reports"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {access_token}'
+        }
+
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            reports = response.json().get('value', [])
+
+            for dataset_id in dataset_ids:
+                reports_for_dataset = []
+                for rep in reports:
+                    if rep.get("datasetId") == dataset_id:
+                        reports_for_dataset.append((rep["id"], rep["name"]))
+                        _logger.debug("✅ Rapport trouvé : %s pour dataset %s", rep["name"], dataset_id)
+
+                if reports_for_dataset:
+                    reports_by_dataset[dataset_id] = reports_for_dataset
+
+            _logger.info("✅ Rapports par dataset récupérés avec succès.")
+        else:
+            _logger.error("❌ Erreur lors de la récupération des rapports : %s", response.text)
+
+        return reports_by_dataset
+
+    def action_afficher_rapports_par_dataset(self):
+        if self.workspace_id:
+            rapports = self.get_reports_by_dataset(self.workspace_id.workspace_id)
+            for dataset_id, reports in rapports.items():
+                _logger.info("📊 Dataset ID: %s", dataset_id)
+                for report_id, name in reports:
+                    _logger.info("    🔸 Report: %s (%s)", name, report_id)
+        else:
+            _logger.warning("❗ Aucun workspace sélectionné.")
+
+    @api.depends('selected_report_choice')
     def _compute_report_embed(self):
-        ctid = "a079a463-30e0-4530-a231-576caa0508bc"
-
-        for rec in self:
-            if rec.report_id:
-                report_id = rec.report_id
-                embed_url = f"https://app.powerbi.com/reportEmbed?reportId={report_id}&autoAuth=true&ctid={ctid}"
-                rec.report_embed = f'''
+        for record in self:
+            _logger.info("Embed URL récupéré pour record ID %s : %s", record.id, record.embed_url)
+            if record.embed_url:
+                iframe_html = f'''
                     <iframe title="Power BI Report" 
                             width="100%" 
                             height="600" 
-                            src="{embed_url}" 
+                            src="{record.embed_url}" 
                             frameborder="0" 
                             allowFullScreen="true">
                     </iframe>
                 '''
-
-
+                record.report_embed = Markup(iframe_html)
             else:
-                rec.report_embed = ""
+                record.report_embed = False
 
-    def _get_report_selection(self):
-        access_token = self._get_access_token()
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {access_token}'
-        }
-        url = "https://api.powerbi.com/v1.0/myorg/groups/5240a229-ed55-45a7-a593-b23a4bbea19a/reports"
-
-        _logger.info("🔄 Chargement de la sélection des rapports Power BI...")
-
-        try:
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                rapports = response.json().get('value', [])
-                selection = [(rapport['id'], rapport['name']) for rapport in rapports]
-                _logger.info("✅ Rapports disponibles pour la sélection : %s", selection)
-                return selection
-            else:
-                _logger.error("❌ Erreur lors de la récupération des rapports : %s", response.text)
-                return []
-        except Exception as e:
-            _logger.exception("⚠️ Exception lors de la récupération des rapports Power BI : %s", str(e))
-            return []
-
-    def test_recuperation_rapports_console(self):
-        access_token = self._get_access_token()
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {access_token}'
-        }
-        url = f"https://api.powerbi.com/v1.0/myorg/groups/5240a229-ed55-45a7-a593-b23a4bbea19a/reports"
-
-        _logger.info("🔄 Appel à l'API Power BI pour récupérer les rapports...")
-        response = requests.get(url, headers=headers)
-
-        if response.status_code == 200:
-            rapports = response.json().get('value', [])
-            _logger.info("✅ Rapports récupérés avec succès. Nombre de rapports : %d", len(rapports))
-
-            # Préparation de la liste pour la selection
-            selection = [(rapport['id'], rapport['name']) for rapport in rapports]
-
-            # Mise à jour du champ report_id avec la sélection des rapports récupérés
-            self._update_report_selection(selection)
-
-            for rapport in rapports:
-                _logger.info("📊 Rapport trouvé - Nom: %s | ID: %s", rapport.get('name'), rapport.get('id'))
-        else:
-            _logger.error("❌ Échec de récupération des rapports. Code: %s | Message: %s", response.status_code,
-                          response.text)
-
-    def _update_report_selection(self, selection):
-        """
-        Met à jour dynamiquement les options disponibles dans le champ 'report_id'.
-        """
-        # Ajout de la sélection des rapports dans le champ `report_id`
-        self._set_report_selection(selection)
-
-        # Méthode pour mettre à jour la sélection des rapports
-    def _set_report_selection(self, selection):
-            """
-            Met à jour dynamiquement les options disponibles dans le champ 'report_id'.
-            """
-            # On met à jour le champ report_id avec la sélection dynamique
-            self.env.cr.execute('''
-                UPDATE ir_model_fields
-                SET selection = %s
-                WHERE model = %s AND name = %s
-            ''', (str(selection), 'power_bi.report', 'report_id'))

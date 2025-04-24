@@ -4,36 +4,67 @@
         <field name="model">power_bi.report</field>
         <field name="arch" type="xml">
             <form string="Rapport Power BI">
+                <header>
 
-                    <header class="custom_header_style">
-                        <div class="row">
-                            <div class="col-4">
-                                <label for="name" class="col-form-label">Rapport Name</label>
-                                <field name="name"/>
-                            </div>
-                            <div class="col-4">
-                                <label for="workspace_id" class="col-form-label">Workspace</label>
-                                <field name="workspace_id" options="{'no_create': True}" on_change="1"/>
-                            </div>
-                            <div class="col-4">
-                                <label for="report_id" class="col-form-label">Selection Rapport</label>
-                                <field name="report_id" widget="selection"/>
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <label for="report_url" class="col-form-label">Rapport URL</label>
-                                <field name="report_url"/>
-                            </div>
-                        </div>
-                    </header>
+                </header>
 
-                    <div class="o_row mt-4">
-                        <div class="col-12">
-                            <field name="report_embed"/>
+                <sheet>
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; min-height: 700px; background-color: #f4f6f9; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+
+                        <div style="flex: 1; min-width: 300px;  background-image: url('/custom_powerbi_connector/static/src/image/images-removebg-preview (2).png');  background-size: 300px 200px;
+    background-repeat: no-repeat;
+    background-position: center;background-color: #FDF6E3; padding: 25px; border-radius: 12px; border: 1px solid #ddd;">
+                            <h2 style="margin-bottom: 50px; color: #4a4a4a; display: flex; align-items: center; gap: 10px;">
+    <img src="/custom_powerbi_connector/static/src/image/images-removebg-preview (2).png" style="height: 30px;" alt="Power BI"/>
+    Configuration
+</h2>
+                            <group col="1">
+                                <field name="name" nolabel="0"/>
+                                <field name="workspace_id" nolabel="0" options="{'no_create': True}" on_change="1"/>
+                                <field name="dataset_id" domain="[('workspace_id', '=', workspace_id)]" options="{'no_create': True}" />
+                               <field name="available_report_ids" widget="many2many_tags" domain="[('id', 'in', available_report_ids)]"/>
+                                <field name="selected_report_choice" domain="[('id', 'in', available_report_ids)]" invisible="1"/>
+
+                                <field name="report_id" invisible="1"/>
+
+
+                            </group>
+                            <div style="margin-left:30px">
+ <button
+        name="action_create_report_lines"
+        string="🟨 Show Report Power BI"
+        type="object"
+        style="
+            background-color: #f2c811;
+            color: #000000;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        "
+        onmouseover="this.style.backgroundColor='#d4ac0d';"
+        onmouseout="this.style.backgroundColor='#f2c811';"
+    />
+                            </div>
                         </div>
+
+                        <!-- Colonne droite -->
+                        <div style="flex: 2; min-width: 500px; background-color: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #ddd;">
+                            <h2 style="margin-bottom: 20px; color: #4a4a4a;">
+                                📊 Aperçu du Rapport
+                            </h2>
+                            <group col="1">
+                                <field name="report_embed" widget="html" style="min-height: 600px; width: 100%; border: 1px solid #ccc; border-radius: 8px;"/>
+                            </group>
+                        </div>
+
                     </div>
-
+                </sheet>
             </form>
         </field>
     </record>
@@ -43,7 +74,7 @@
         <field name="res_model">power_bi.report</field>
         <field name="view_mode">tree,form</field>
         <field name="help" type="html">
-            <p>Créer et gérer vos rapports Power BI ici.</p>
+            <p style="font-size: 14px; color: #666;">Créer et gérer vos rapports Power BI ici. Visualisez-les en toute simplicité dans une interface moderne.</p>
         </field>
     </record>
 </odoo>

@@ -9,8 +9,28 @@ class PowerBIWorkspace(models.Model):
 
     name = fields.Char(string="Workspace Name")
     workspace_id = fields.Char(string="Workspace ID")
-    connection_id = fields.Many2one('power_bi.connection', string="Power BI Connection", ondelete='cascade')
-    workspace_name = fields.Char(string="Workspace Name")
+    connection_id = fields.Many2one('power_bi.connection', string="Power BI Connection", ondelete='cascade', default=lambda self: self._get_default_connection())
+
+    def _get_default_connection(self):
+        connection = self.env['power_bi.connection'].search([], limit=1)
+        return connection.id if connection else False
+
+    workspace_name = fields.Selection(
+        selection='_get_workspace_selection',
+        string="🏷️ Workspace Name"
+    )
+    @api.model
+    @api.model
+    def _get_workspace_selection(self):
+        workspaces = self.search([])
+        seen = set()
+        unique_names = []
+        for ws in workspaces:
+            if ws.name and ws.name not in seen:
+                unique_names.append((ws.name, ws.name))
+                seen.add(ws.name)
+        return unique_names
+
     state = fields.Selection([
         ('draft', 'Draft'),
         ('published', 'Published'),
@@ -139,11 +159,23 @@ class PowerBIWorkspace(models.Model):
                 if not workspace_id:
                     raise UserError("Réponse API invalide : aucun ID de workspace retourné.")
 
-                workspace = self.create({
-                    'name': workspace_name,
-                    'workspace_id': workspace_id,
-                    'connection_id': connection.id,
-                })
+                # Si on est dans un record existant (self contient un record en cours), on le met à jour
+                if self and len(self) == 1 and not self.workspace_id:
+                    self.write({
+                        'workspace_id': workspace_id,
+                    })
+                    self.log_message('success', f"Workspace '{workspace_name}' mis à jour avec l'ID Power BI.")
+                    return self
+                else:
+                    # Sinon on en crée un nouveau
+                    workspace = self.create({
+                        'name': workspace_name,
+                        'workspace_id': workspace_id,
+                        'connection_id': connection.id,
+                    })
+                    self.log_message('success', f"Workspace '{workspace_name}' créé avec succès.")
+                    return workspace
+
                 self.log_message('success', f"Workspace '{workspace_name}' créé avec succès.")
                 return workspace
             else:

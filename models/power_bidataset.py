@@ -11,7 +11,7 @@ class PowerBIDataset(models.Model):
     _description = 'Dataset Power BI'
     _inherit = ['mail.thread']
 
-    name = fields.Char(string="Dataset Name", required=True)
+    name = fields.Char(string="Dataset Name", required=True, unique=True)
     workspace_id = fields.Many2one('power_bi.workspace', string="Workspace", tracking=True)
     table_ids = fields.Many2many(
         'power_bi.table',
@@ -165,6 +165,8 @@ class PowerBIDataset(models.Model):
             "tables": []
         }
 
+        table_name_map = {}
+
         for table in self.table_ids:
             column_names = set()
             columns = []
@@ -186,29 +188,56 @@ class PowerBIDataset(models.Model):
                     })
 
             if columns:
+                table_name = f"Table_{table.id}"
                 data["tables"].append({
-                    "name": f"Table_{table.id}",
+                    "name": table_name,
                     "columns": columns
                 })
+                table_name_map[table.id] = table_name
 
+        # ➤ Création du dataset (structure)
         response = requests.post(url, json=data, headers=headers)
 
-        if response.status_code == 201:
-            _logger.info("Publication réussie pour le dataset Power BI (ID: %d)", self.id)
-            self.state = 'published'
-
-            log_message = f"Dataset Power BI '{self.name}' (ID {self.id}) publié avec succès."
-            self._create_log_message('success', log_message)
-
-            # ➕ Message dans le chatter
-            self.message_post(body=log_message)
-
-        else:
-            _logger.error("Erreur lors de la publication du dataset Power BI (ID: %d). Code: %d, Message: %s", self.id,
-                          response.status_code, response.text)
-            log_message = f"Erreur lors de la publication du dataset Power BI (ID {self.id}). Code: {response.status_code}, Message: {response.text}"
-            self._create_log_message('error', log_message)
+        if response.status_code != 201:
+            _logger.error("Erreur de création du dataset : %s", response.text)
             raise UserError(f"Erreur lors de la publication : {response.status_code} - {response.text}")
+
+        dataset_id = response.json().get("id")
+        _logger.info("Dataset Power BI créé avec ID : %s", dataset_id)
+
+        # ➤ Insertion des données
+        for table in self.table_ids:
+            model_name = table.table_ids[0].model if table.table_ids else None
+            if not model_name:
+                continue
+
+            records = self.env[model_name].search([], limit=1000)
+
+            rows = []
+            for rec in records:
+                row_data = {}
+                for field in table.selected_field_ids:
+                    row_data[field.name] = str(getattr(rec, field.name, ''))
+                for field in table.related_field_ids:
+                    row_data[field.name] = str(getattr(rec, field.name, ''))
+                rows.append(row_data)
+
+            if rows:
+                push_url = f'https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/datasets/{dataset_id}/tables/{table_name_map[table.id]}/rows'
+                push_response = requests.post(push_url, json={"rows": rows}, headers=headers)
+
+                if push_response.status_code not in (200, 201):
+                    _logger.error("Erreur envoi lignes pour table %s: %s", table_name_map[table.id], push_response.text)
+                    raise UserError(
+                        f"Erreur lors de l'envoi des données : {push_response.status_code} - {push_response.text}")
+                else:
+                    _logger.info("Lignes envoyées avec succès pour table %s", table_name_map[table.id])
+
+        # ➤ Marquer comme publié
+        self.state = 'published'
+        log_message = f"Dataset Power BI '{self.name}' publié avec succès avec données."
+        self.message_post(body=log_message)
+        self._create_log_message('success', log_message)
 
     def _create_log_message(self, status, message):
         # Création du log

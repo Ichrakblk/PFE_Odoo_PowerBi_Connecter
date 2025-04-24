@@ -7,7 +7,7 @@
             <form string="Create a Workspace 🛠️">
                 <sheet>
                     <group>
-                        <field name="connection_id" string="🔌 Connection"/>
+<field name="connection_id" string="🔌 Connection" readonly="1"/>
                         <field name="name" string="🏷️ Workspace Name"/>
 
                     </group>
@@ -26,8 +26,8 @@
             <form string="Existing Workspace 📂">
                 <sheet>
                     <group>
-                        <field name="connection_id" string="🔌 Connection"/>
-                        <field name="workspace_name" string="🏷️ Workspace Name" readonly="1"/>
+<field name="connection_id" string="🔌 Connection" readonly="1"/>
+                        <field name="workspace_name" string="🏷️ Workspace Name" />
 
                     </group>
 
@@ -46,6 +46,7 @@
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_power_bi_workspace_create_popup"/>
         <field name="target">new</field>
+         <field name="context">{'default_connection_id': active_model and active_id or %(connection_id)d}</field>
     </record>
 
     <record id="view_power_bi_workspace_tree" model="ir.ui.view">
@@ -67,7 +68,7 @@
             <form string="Workspace 📂">
                 <sheet>
                     <group>
-                        <field name="connection_id" string="🔌 Connection"/>
+<field name="connection_id" string="🔌 Connection" readonly="1"/>
                         <field name="name" string="🏷️ Workspace Name"/>
                     </group>
                 </sheet>
