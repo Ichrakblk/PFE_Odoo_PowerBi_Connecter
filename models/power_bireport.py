@@ -142,14 +142,14 @@ class PowerBIReport(models.Model):
     def _get_access_token(self):
         tenant_id = 'a079a463-30e0-4530-a231-576caa0508bc'
         client_id = '84220ff8-fe80-40db-a7ae-111af1de085f'
-        client_secret = '8Ei8Q~Id5c~sABXw3m90Z.a2lbL3rmgkAWPrlbUb'
+        #client_secret = '8Ei8Q~Id5c~sABXw3m90Z.a2lbL3rmgkAWPrlbUb'
 
         url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         data = {
             'grant_type': 'client_credentials',
             'client_id': client_id,
-            'client_secret': client_secret,
+            #"'client_secret': client_secret,
             'scope': 'https://analysis.windows.net/powerbi/api/.default'
         }
 
