@@ -98,6 +98,7 @@ body, .o_main_navbar, .o_list_view, .o_form_view {
     color:  #fdf5e6  !important;
 }
 
+
 /* Bouton actif/focus */
 .o_menu_sections .dropdown-toggle:focus,
 .o_menu_sections .dropdown-toggle:active {

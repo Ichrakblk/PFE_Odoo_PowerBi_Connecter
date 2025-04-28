@@ -1,0 +1,25 @@
+<odoo>
+<record id="view_choose_report_wizard_form" model="ir.ui.view">
+
+    <field name="name">choose.report.wizard.form</field>
+    <field name="model">choose.report.wizard</field>
+    <field name="arch" type="xml">
+        <form string="Choisir un rapport">
+            <group>
+                <field name="selected_report_id"/>
+            </group>
+            <footer>
+                <button name="action_confirm_selection" type="object" class="btn-primary" string="Choisir"/>
+                <button string="Annuler" special="cancel" class="btn-secondary"/>
+            </footer>
+        </form>
+    </field>
+</record>
+
+<record id="action_choose_report_wizard" model="ir.actions.act_window">
+    <field name="name">Choisir un rapport</field>
+    <field name="res_model">choose.report.wizard</field>
+    <field name="view_mode">form</field>
+    <field name="target">new</field>
+</record>
+</odoo>

@@ -15,6 +15,7 @@
         'views/log_message_views.xml',
         'views/log_message.xml',
         'views/power_bi_report_views.xml',
+'views/choose_report_wizard_view.xml',
         'views/power_bi_menus.xml',
         'security/ir.model.access.csv',
     ],

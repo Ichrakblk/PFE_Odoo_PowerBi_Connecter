@@ -10,3 +10,4 @@ from . import job
 from . import log_message
 from . import power_bireport
 from . import powerbi_report_choice
+from . import choose_report_wizard
