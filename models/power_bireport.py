@@ -76,6 +76,31 @@ class PowerBIReport(models.Model):
         else:
             _logger.warning("⚠️ Le dataset sélectionné n'a pas été trouvé dans Power BI.")
 
+    @api.onchange('available_report_ids')
+    def _onchange_available_report_ids(self):
+        """
+        Mise à jour dynamique de l'embed_url si un rapport est supprimé ou modifié
+        """
+        if self.available_report_ids:
+
+            first_report = self.available_report_ids[0]
+            ctid = "a079a463-30e0-4530-a231-576caa0508bc"
+            embed_url = f"https://app.powerbi.com/reportEmbed?reportId={first_report.report_id}&autoAuth=true&ctid={ctid}"
+            self.embed_url = embed_url
+            self.report_embed = f'''
+                        <iframe title="Power BI Report" 
+                                width="100%" 
+                                height="600" 
+                                src="{embed_url}" 
+                                frameborder="0" 
+                                allowFullScreen="true">
+                        </iframe>
+                    '''
+        else:
+
+            self.embed_url = False
+            self.report_embed = False
+
     def action_create_report_lines(self):
         """
         Méthode pour générer et enregistrer les lignes de rapports
@@ -115,14 +140,14 @@ class PowerBIReport(models.Model):
                     _logger.info("🔗 URL Power BI générée : %s", embed_url)
                     self.embed_url = embed_url
                     report_embed = f'''
-                                           <iframe title="Power BI Report" 
-                                                   width="100%" 
-                                                   height="600" 
-                                                   src="{embed_url}" 
-                                                   frameborder="0" 
-                                                   allowFullScreen="true">
-                                           </iframe>
-                                       '''
+                                               <iframe title="Power BI Report" 
+                                                       width="100%" 
+                                                       height="600" 
+                                                       src="{embed_url}" 
+                                                       frameborder="0" 
+                                                       allowFullScreen="true">
+                                               </iframe>
+                                           '''
 
                     report_lines.append((0, 0, {
                         'report_id': report_id,
@@ -187,7 +212,6 @@ class PowerBIReport(models.Model):
                 dataset_id = report.get('datasetId')
                 self.dataset_id_display = dataset_id
                 _logger.info("✅ Dataset ID récupéré depuis Power BI : %s", dataset_id)
-
 
                 self.name = self.selected_report_choice.report_name
                 _logger.info("✅ Nom du rapport mis à jour : %s", self.name)
