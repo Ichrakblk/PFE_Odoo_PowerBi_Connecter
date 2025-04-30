@@ -13,5 +13,5 @@ access_power_bi_job,job.model,model_job_model,,1,1,1,1
 access_log_message,log.message,model_log_message,,1,1,1,1
 access_power_bi_report,power_bi.report,model_power_bi_report,,1,1,1,1
 access_power_bi_report_choice,power_bi.report.choice,model_power_bi_report_choice,,1,1,1,1
-access_choose_report_wizard,choose.report.wizard,model_choose_report_wizard,,1,1,1,1
+
 
