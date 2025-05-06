@@ -1,8 +1,19 @@
 from odoo import models, fields, api
 import requests
 import logging
-
+import re
+import requests
 _logger = logging.getLogger(__name__)
+import time
+import base64
+from odoo.exceptions import UserError
+import fitz
+
+from openai import OpenAI
+import time
+import openai
+import openai
+
 
 
 class PowerBIReport(models.Model):
@@ -23,6 +34,7 @@ class PowerBIReport(models.Model):
     dataset_id_display = fields.Char(string="Power BI Dataset ID", readonly=True)
     has_multiple_reports = fields.Boolean(string="Multiple Reports?", compute="_compute_multiple_reports",
                                           store=True)
+    summary_text = fields.Text(string="Résumé du Rapport", store=True)
 
     @api.depends('available_report_ids')
     def _compute_multiple_reports(self):
@@ -239,3 +251,147 @@ class PowerBIReport(models.Model):
     def action_test_report_embed(self):
         self._compute_report_embed()
         _logger.info("✅ Report tested and embed generated.")
+
+    def _get_page_titles(self, report_id):
+        access_token = self._get_access_token()
+        headers = {'Authorization': f'Bearer {access_token}'}
+
+        pages_url = f"https://api.powerbi.com/v1.0/myorg/groups/5240a229-ed55-45a7-a593-b23a4bbea19a/reports/d02dbe0f-68ba-47f4-8350-db54b67b1123/pages"
+        pages_response = requests.get(pages_url, headers=headers)
+
+        if pages_response.status_code != 200:
+            _logger.error(
+                f"Erreur lors de la récupération des pages : {pages_response.status_code} - {pages_response.text}")
+            return []
+
+        try:
+            pages = pages_response.json().get('value', [])
+        except ValueError:
+            _logger.error(f"Réponse JSON invalide : {pages_response.text}")
+            return []
+
+        titles = [page.get("displayName") for page in pages if page.get("displayName")]
+        return titles
+
+    def action_test_page_titles(self):
+        report_id = self.report_id
+        titles = self._get_page_titles(report_id)
+
+        if not titles:
+            _logger.info("❌ Aucune page trouvée.")
+        else:
+            _logger.info("✅ Pages du rapport récupérées :")
+            for title in titles:
+                _logger.info(f"👉 {title}")
+
+    def action_export_pdf(self):
+        """
+        Export the current Power BI report as a PDF file and return the binary content.
+        """
+        self.ensure_one()
+        access_token = self._get_access_token()
+
+
+
+        export_url = f"https://api.powerbi.com/v1.0/myorg/groups/5240a229-ed55-45a7-a593-b23a4bbea19a/reports/d02dbe0f-68ba-47f4-8350-db54b67b1123/ExportTo"
+
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        }
+
+        # Optional: You can customize which pages to export here
+        body = {
+            "format": "PDF"
+        }
+
+        response = requests.post(export_url, headers=headers, json=body)
+
+        if response.status_code != 202:
+            _logger.error("Échec de l'export PDF : %s", response.text)
+            raise UserError("Erreur lors de la génération du PDF depuis Power BI.")
+
+        # Get the export ID from the response
+        export_id = response.json().get('id')
+        if not export_id:
+            raise UserError("ID d'export introuvable.")
+
+        # Poll the export status until it's ready
+        status_url = f"https://api.powerbi.com/v1.0/myorg/groups/5240a229-ed55-45a7-a593-b23a4bbea19a/reports/d02dbe0f-68ba-47f4-8350-db54b67b1123/exports/{export_id}"
+        while True:
+            status_response = requests.get(status_url, headers=headers)
+            _logger.info(f"HTTP {status_response.status_code}")
+            try:
+                status_data = status_response.json()
+                _logger.info(f"Statut export: {status_data.get('status')}")
+            except ValueError:
+                _logger.error("Contenu de la réponse non JSON : %s", status_response.text)
+                raise UserError("Réponse inattendue lors de la vérification du statut d'export PDF.")
+
+            if status_data.get("status") == "Succeeded":
+                break
+            elif status_data.get("status") == "Failed":
+                raise UserError("L'export PDF a échoué.")
+            time.sleep(2)
+
+        # Télécharger le fichier PDF
+        file_url = status_url + "/file"
+        pdf_response = requests.get(file_url, headers=headers)
+
+        if pdf_response.status_code == 200:
+            text = self._extract_text_from_pdf(pdf_response.content)
+            summary = self._summarize_text(text)
+            self.summary_text = summary  # Stocker le résumé dans Odoo
+
+            # Enregistrer le PDF dans un fichier binaire Odoo
+            attachment = self.env['ir.attachment'].create({
+                'name': f"{self.name}.pdf",
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_response.content),
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/pdf'
+            })
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{attachment.id}?download=true',
+                'target': 'new'
+            }
+        else:
+            raise UserError("Erreur lors du téléchargement du fichier PDF.")
+
+    def _extract_text_from_pdf(self, pdf_content):
+        doc = fitz.open(stream=pdf_content, filetype="pdf")
+        full_text = ""
+        for page in doc:
+            full_text += page.get_text()
+        return full_text
+
+    def _summarize_text(self, text):
+        try:
+            prompt = (
+                "Voici le contenu d’un rapport décisionnel :\n"
+                f"{text}\n"
+                "Peux-tu générer un résumé clair et utile pour un décideur ?"
+            )
+
+            response = requests.post(
+                "http://localhost:11434/api/generate",
+                json={
+                    "model": "mistral",  # ou llama2, gemma, etc.
+                    "prompt": prompt,
+                    "stream": False
+                }
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                return result.get("response", "Résumé non disponible.")
+            else:
+                _logger.error(f"Erreur de résumé via Ollama : {response.status_code} - {response.text}")
+                return "Résumé non disponible."
+        except Exception as e:
+            _logger.error(f"Exception pendant le résumé via Ollama : {str(e)}")
+            return "Résumé non disponible."
+
+

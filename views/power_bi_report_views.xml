@@ -29,6 +29,7 @@
                                  <field name="embed_url" readonly="1"/>
                                 <field name="report_id" invisible="1"/>
                                 <field name="has_multiple_reports" invisible="1"/>
+                                  <field name="summary_text" widget="text"/>
 
                             </group>
 
@@ -41,6 +42,16 @@
                                     onmouseover="this.style.backgroundColor='#d4ac0d';"
                                     onmouseout="this.style.backgroundColor='#f2c811';"
                                 />
+                                <button name="action_test_page_titles"
+        type="object"
+        string="Tester Titres des Visuels"
+        class="btn-primary"/>
+                                <button name="action_export_pdf"
+                        string="Exporter PDF"
+                        type="object"
+                        class="btn-primary"/>
+
+
                             </div>
                         </div>
 
