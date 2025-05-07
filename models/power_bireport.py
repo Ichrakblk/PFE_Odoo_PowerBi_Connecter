@@ -34,7 +34,7 @@ class PowerBIReport(models.Model):
     dataset_id_display = fields.Char(string="Power BI Dataset ID", readonly=True)
     has_multiple_reports = fields.Boolean(string="Multiple Reports?", compute="_compute_multiple_reports",
                                           store=True)
-    summary_text = fields.Text(string="Résumé du Rapport", store=True)
+    summary_text = fields.Text(string="Summary of the Report", store=True)
 
     @api.depends('available_report_ids')
     def _compute_multiple_reports(self):
@@ -340,6 +340,11 @@ class PowerBIReport(models.Model):
 
         if pdf_response.status_code == 200:
             text = self._extract_text_from_pdf(pdf_response.content)
+            _logger.info(f"Texte extrait du PDF : {text}")  # <-- AJOUT ICI
+            if not text.strip():
+                _logger.warning("Aucun texte extrait du PDF.")
+
+            # Générer le résumé
             summary = self._summarize_text(text)
             self.summary_text = summary  # Stocker le résumé dans Odoo
 
@@ -369,29 +374,36 @@ class PowerBIReport(models.Model):
 
     def _summarize_text(self, text):
         try:
+            cleaned_text = text[:1000]  # Use a significant excerpt
             prompt = (
-                "Voici le contenu d’un rapport décisionnel :\n"
-                f"{text}\n"
-                "Peux-tu générer un résumé clair et utile pour un décideur ?"
+                "Here is the content of a decision-making report (excerpt):\n"
+                f"{cleaned_text}\n"
+                "Can you generate a clear and useful summary for a decision-maker?"
             )
+
+            _logger.info(f"Prompt sent to Ollama: {prompt}")
 
             response = requests.post(
                 "http://localhost:11434/api/generate",
+                headers={"Content-Type": "application/json"},
                 json={
-                    "model": "mistral",  # ou llama2, gemma, etc.
+                    "model": "mistral",
                     "prompt": prompt,
                     "stream": False
-                }
+                },
+                timeout=400
             )
 
             if response.status_code == 200:
                 result = response.json()
-                return result.get("response", "Résumé non disponible.")
+                return result.get("response", "Summary not available.")
             else:
-                _logger.error(f"Erreur de résumé via Ollama : {response.status_code} - {response.text}")
-                return "Résumé non disponible."
+                _logger.error(f"Summarization error via Ollama: {response.status_code} - {response.text}")
+                return "Summary not available."
         except Exception as e:
-            _logger.error(f"Exception pendant le résumé via Ollama : {str(e)}")
-            return "Résumé non disponible."
+            _logger.error(f"Exception during summarization via Ollama: {str(e)}")
+            return "Summary not available."
+
+
 
 
