@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="chatbot_template" name="Chatbot Interface">
+        <div id="chatbot_widget" style="position: fixed; bottom: 20px; right: 20px; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 0 10px #aaa; z-index: 9999; width: 300px;">
+            <input type="text" id="chatbot_input" placeholder="Pose ta question..." style="width: 100%; margin-bottom: 5px; padding: 5px;"/>
+            <button id="chatbot_send" style="background:#875A7B; color:white; border:none; padding:5px 10px; border-radius:5px; width: 100%;">Envoyer</button>
+            <div id="chatbot_response" style="margin-top: 10px; min-height: 50px; font-size: 0.9em; color: #444;"></div>
+        </div>
+
+        <script type="text/javascript" >
+            const sendBtn = document.getElementById('chatbot_send');
+            const input = document.getElementById('chatbot_input');
+            const responseDiv = document.getElementById('chatbot_response');
+
+            sendBtn.addEventListener('click', function () {
+                const message = input.value.trim();
+                if (!message) {
+                    alert("Écris ta question !");
+                    return;
+                }
+                input.value = '';
+                responseDiv.textContent = "Chargement...";
+
+                fetch('/chatbot/message', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+    },
+    body: JSON.stringify({text: message}),
+    credentials: 'same-origin',
+})
+
+                .then(res => res.json())
+                .then(data => {
+    console.log('Réponse reçue:', data);
+    responseDiv.textContent = (data.result ? data.result.response : null) || "Pas de réponse.";
+
+
+})
+
+                .catch(() => {
+                    responseDiv.textContent = "Erreur lors de la communication.";
+                });
+            });
+        </script>
+    </template>
+</odoo>

@@ -1,0 +1,18 @@
+<odoo>
+    <!-- Assets JS -->
+
+    <!-- Action to open chatbot -->
+    <record id="chatbot_action" model="ir.actions.act_window">
+        <field name="name">Ouvrir Chatbot</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree</field>
+        <field name="target">new</field>
+        <field name="context">{'default_type': 'contact'}</field>
+    </record>
+
+    <!-- Client action to launch chatbot widget -->
+    <record id="action_open_chatbot_window" model="ir.actions.client">
+        <field name="name">Chatbot Assistant</field>
+        <field name="tag">chatbot.widget</field>
+    </record>
+</odoo>

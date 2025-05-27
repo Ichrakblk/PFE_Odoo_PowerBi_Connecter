@@ -23,4 +23,7 @@
 
     <menuitem id="menu_power_bi_report" name="Power BI Reports" parent="menu_powerbi_root" action="action_power_bi_report" />
 
+    <menuitem id="menu_chatbot_access" name="🤖 Chatbot Assistant" parent="menu_powerbi_root"
+              action="action_open_chatbot_window" sequence="999"/>
+
 </odoo>

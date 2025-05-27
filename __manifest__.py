@@ -15,6 +15,8 @@
         'views/log_message_views.xml',
         'views/log_message.xml',
         'views/power_bi_report_views.xml',
+        'views/chatbot_view.xml',
+        'views/chatbot_template.xml',
 
         'views/power_bi_menus.xml',
         'security/ir.model.access.csv',
@@ -22,6 +24,8 @@
     'assets': {
         'web.assets_backend': [
             'custom_powerbi_connector/static/src/css/theme_backend.css',
+            'custom_powerbi_connector/static/src/js/chatbot_widget.js',
+
         ],
     },
     'installable': True,

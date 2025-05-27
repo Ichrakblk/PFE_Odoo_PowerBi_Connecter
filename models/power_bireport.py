@@ -300,7 +300,7 @@ class PowerBIReport(models.Model):
             'Content-Type': 'application/json'
         }
 
-        # Optional: You can customize which pages to export here
+
         body = {
             "format": "PDF"
         }
@@ -316,7 +316,7 @@ class PowerBIReport(models.Model):
         if not export_id:
             raise UserError("ID d'export introuvable.")
 
-        # Poll the export status until it's ready
+
         status_url = f"https://api.powerbi.com/v1.0/myorg/groups/5240a229-ed55-45a7-a593-b23a4bbea19a/reports/d02dbe0f-68ba-47f4-8350-db54b67b1123/exports/{export_id}"
         while True:
             status_response = requests.get(status_url, headers=headers)
@@ -334,21 +334,21 @@ class PowerBIReport(models.Model):
                 raise UserError("L'export PDF a échoué.")
             time.sleep(2)
 
-        # Télécharger le fichier PDF
+
         file_url = status_url + "/file"
         pdf_response = requests.get(file_url, headers=headers)
 
         if pdf_response.status_code == 200:
             text = self._extract_text_from_pdf(pdf_response.content)
-            _logger.info(f"Texte extrait du PDF : {text}")  # <-- AJOUT ICI
+            _logger.info(f"Texte extrait du PDF : {text}")
             if not text.strip():
                 _logger.warning("Aucun texte extrait du PDF.")
 
-            # Générer le résumé
-            summary = self._summarize_text(text)
-            self.summary_text = summary  # Stocker le résumé dans Odoo
 
-            # Enregistrer le PDF dans un fichier binaire Odoo
+            summary = self._summarize_text(text)
+            self.summary_text = summary
+
+
             attachment = self.env['ir.attachment'].create({
                 'name': f"{self.name}.pdf",
                 'type': 'binary',
@@ -374,7 +374,7 @@ class PowerBIReport(models.Model):
 
     def _summarize_text(self, text):
         try:
-            cleaned_text = text[:1000]  # Use a significant excerpt
+            cleaned_text = text[:1000]
             prompt = (
                 "Here is the content of a decision-making report (excerpt):\n"
                 f"{cleaned_text}\n"
