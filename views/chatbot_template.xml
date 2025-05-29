@@ -1,48 +1,213 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <template id="chatbot_template" name="Chatbot Interface">
-        <div id="chatbot_widget" style="position: fixed; bottom: 20px; right: 20px; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 0 10px #aaa; z-index: 9999; width: 300px;">
-            <input type="text" id="chatbot_input" placeholder="Pose ta question..." style="width: 100%; margin-bottom: 5px; padding: 5px;"/>
-            <button id="chatbot_send" style="background:#875A7B; color:white; border:none; padding:5px 10px; border-radius:5px; width: 100%;">Envoyer</button>
-            <div id="chatbot_response" style="margin-top: 10px; min-height: 50px; font-size: 0.9em; color: #444;"></div>
+        <style>
+            /* Conteneur principal */
+            #chatbot_widget {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 900px;
+    max-height: 1000px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+
+            /* Barre de titre */
+            #chatbot_header {
+                background: #b2d2db;
+                color: white;
+                padding: 12px 20px;
+                font-weight: 600;
+                font-size: 1.1em;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            #chatbot_header .close_btn {
+                cursor: pointer;
+                font-size: 1.3em;
+                line-height: 1;
+                user-select: none;
+            }
+
+            /* Historique des messages */
+            #chatbot_history {
+                flex-grow: 1;
+                padding: 15px 20px;
+                overflow-y: auto;
+                background: #f0f0f5;
+                font-size: 0.9em;
+            }
+            /* Bulle message utilisateur */
+            .chat_msg.user {
+                background: #ffd88f;
+                color: white;
+                padding: 10px 15px;
+                margin: 8px 0;
+                max-width: 75%;
+                align-self: flex-end;
+                border-radius: 18px 18px 0 18px;
+                box-shadow: 0 2px 5px rgba(135,90,123,0.3);
+                white-space: pre-wrap;
+            }
+            /* Bulle message bot */
+            .chat_msg.bot {
+                background: #ddddee;
+                color: #333;
+                padding: 10px 15px;
+                margin: 8px 0;
+                max-width: 75%;
+                align-self: flex-start;
+                border-radius: 18px 18px 18px 0;
+                white-space: pre-wrap;
+            }
+
+            /* Zone d’entrée et bouton */
+            #chatbot_controls {
+                display: flex;
+                padding: 12px 15px;
+                border-top: 1px solid #ccc;
+                background: #fafafa;
+            }
+            #chatbot_input {
+                flex-grow: 1;
+                border: 1px solid #ccc;
+                border-radius: 25px;
+                padding: 10px 15px;
+                font-size: 1em;
+                outline: none;
+                transition: border-color 0.3s;
+            }
+            #chatbot_input:focus {
+                border-color: #875A7B;
+            }
+            #chatbot_send {
+                background: #ffd88f;
+                border: none;
+                color: white;
+                font-weight: 600;
+                margin-left: 10px;
+                padding: 0 20px;
+                border-radius: 25px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+            #chatbot_send:hover {
+                background: #6e4660;
+            }
+        </style>
+
+        <div id="chatbot_widget" aria-label="Chatbot">
+            <div id="chatbot_header">
+                <span>🤖 Chatbot</span>
+                <span class="close_btn" title="Fermer">×</span>
+            </div>
+            <div id="chatbot_history" role="log" aria-live="polite" aria-atomic="false"></div>
+            <div id="chatbot_controls">
+                <input type="text" id="chatbot_input" placeholder="Pose ta question..." aria-label="Message à envoyer"/>
+                <button id="chatbot_send" aria-label="Envoyer le message">Envoyer</button>
+            </div>
         </div>
 
-        <script type="text/javascript" >
+        <script type="text/javascript">
             const sendBtn = document.getElementById('chatbot_send');
             const input = document.getElementById('chatbot_input');
-            const responseDiv = document.getElementById('chatbot_response');
+            const historyDiv = document.getElementById('chatbot_history');
+            const closeBtn = document.querySelector('#chatbot_header .close_btn');
+            const chatbotWidget = document.getElementById('chatbot_widget');
 
-            sendBtn.addEventListener('click', function () {
+            // Fonction pour afficher un message dans l'historique
+            function addMessageToHistory(text, sender) {
+                const msgEl = document.createElement('div');
+                msgEl.classList.add('chat_msg');
+                msgEl.classList.add(sender === 'user' ? 'user' : 'bot');
+                msgEl.textContent = text;
+                historyDiv.appendChild(msgEl);
+
+                // Scroll fluide vers le bas
+                historyDiv.scrollTo({top: historyDiv.scrollHeight, behavior: 'smooth'});
+            }
+
+            // Charger l'historique
+            function loadHistory() {
+                fetch('/chatbot/history', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                    credentials: 'same-origin',
+                    body: JSON.stringify({})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.messages &amp;&amp; data.messages.length) {
+                        data.messages.forEach(msg => {
+                            addMessageToHistory("Vous : " + msg.question, 'user');
+                            addMessageToHistory("Bot : " + msg.response, 'bot');
+                        });
+                    }
+                })
+                .catch(() => {
+                    console.warn("Impossible de charger l'historique des messages.");
+                });
+            }
+
+            // Envoi message
+            sendBtn.addEventListener('click', () => {
                 const message = input.value.trim();
                 if (!message) {
                     alert("Écris ta question !");
                     return;
                 }
                 input.value = '';
-                responseDiv.textContent = "Chargement...";
+                addMessageToHistory(message, 'user');
+                addMessageToHistory("Chargement...", 'bot');
 
                 fetch('/chatbot/message', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-    },
-    body: JSON.stringify({text: message}),
-    credentials: 'same-origin',
-})
-
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                    body: JSON.stringify({text: message}),
+                    credentials: 'same-origin',
+                })
                 .then(res => res.json())
                 .then(data => {
-    console.log('Réponse reçue:', data);
-    responseDiv.textContent = (data.result ? data.result.response : null) || "Pas de réponse.";
-
-
-})
-
+                    // Retirer "Chargement..."
+                    const lastBotMsg = historyDiv.querySelector('.chat_msg.bot:last-child');
+                    if (lastBotMsg &amp;&amp; lastBotMsg.textContent === "Chargement...") {
+                        lastBotMsg.remove();
+                    }
+                    addMessageToHistory(data.result ? data.result.response : "Pas de réponse.", 'bot');
+                })
                 .catch(() => {
-                    responseDiv.textContent = "Erreur lors de la communication.";
+                    const lastBotMsg = historyDiv.querySelector('.chat_msg.bot:last-child');
+                    if (lastBotMsg &amp;&amp; lastBotMsg.textContent === "Chargement...") {
+                        lastBotMsg.remove();
+                    }
+                    addMessageToHistory("Erreur lors de la communication.", 'bot');
                 });
             });
+
+            // Envoi message avec Enter
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendBtn.click();
+                    e.preventDefault();
+                }
+            });
+
+            // Fermer le chatbot
+            closeBtn.addEventListener('click', () => {
+                chatbotWidget.style.display = 'none';
+            });
+
+            document.addEventListener('DOMContentLoaded', loadHistory);
         </script>
     </template>
 </odoo>

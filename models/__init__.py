@@ -11,3 +11,4 @@ from . import log_message
 from . import power_bireport
 from . import powerbi_report_choice
 from . import chatbot
+from . import chatbot_message
