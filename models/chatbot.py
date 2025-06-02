@@ -6,7 +6,8 @@ import spacy
 import logging
 from spellchecker import SpellChecker
 import os
-import requests  # utilisé pour appeler l’API web de LanguageTool
+import requests
+from odoo import fields
 
 _logger = logging.getLogger(__name__)
 
@@ -73,8 +74,22 @@ class ChatbotController(http.Controller):
     def detect_intent(self, message):
         doc = self.nlp(message.lower())
         lemmas = [token.lemma_ for token in doc]
-
-        if {"créer", "ajouter", "insérer"}.intersection(lemmas) and {"contact", "client"}.intersection(lemmas):
+        if any(greeting in lemmas for greeting in ["bonjour", "salut", "bonsoir", "coucou"]):
+            return "greeting"
+        elif any(thank in lemmas for thank in ["merci", "remercier", "thanks", "thank"]):
+            return "thanks"
+        elif {"annuler", "annule", "cancel", "annulation", "annulé", "annulée"}.intersection(
+                lemmas) and "devis" in lemmas:
+            return "cancel_quotation"
+        elif {"produit", "disponible", "article", "catalogue", "voir"}.intersection(lemmas):
+            return "list_products"
+        elif {"envoyer", "mail", "email", "courriel", "envoyer", "envoyé"}.intersection(lemmas) and "devis" in lemmas:
+            return "send_quotation_email"
+        elif {"valider", "confirmer"}.intersection(lemmas) and "devis" in lemmas:
+            return "confirm_quotation"
+        elif {"créer", "nouveau", "facture"}.intersection(lemmas):
+            return "create_invoice"
+        elif {"créer", "ajouter", "insérer"}.intersection(lemmas) and {"contact", "client"}.intersection(lemmas):
             return "create_contact"
         elif {"trouver", "chercher", "afficher"}.intersection(lemmas) and "client" in lemmas:
             return "search_client"
@@ -86,25 +101,12 @@ class ChatbotController(http.Controller):
             return "purchase_order"
         elif {"employé", "personnel", "salarié"}.intersection(lemmas):
             return "list_employees"
-        elif {"vente", "devisss", "commercial"}.intersection(lemmas):
+        elif {"vente", "devis", "commercial"}.intersection(lemmas):
             return "list_sale_orders"
-        elif {"valider", "confirmer"}.intersection(lemmas) and "devis" in lemmas:
-            return "confirm_quotation"
         elif {"pipeline", "opportunité", "afficher", "voir", "suivi"}.intersection(lemmas):
             return "list_opportunities"
-        elif {"créer", "nouveau", "devis"}.intersection(lemmas):
-            return "create_quotation"
         elif {"statistique", "total", "vente", "chiffre"}.intersection(lemmas):
             return "sales_statistics"
-        elif {"valider", "confirmer"}.intersection(lemmas) and "devis" in lemmas:
-            return "confirm_quotation"
-        elif {"pipeline", "opportunité", "afficher", "voir", "suivi"}.intersection(lemmas):
-            return "list_opportunities"
-        elif {"créer", "nouveau", "devis"}.intersection(lemmas):
-            return "create_quotation"
-        elif {"statistique", "total", "vente", "chiffre"}.intersection(lemmas):
-            return "sales_statistics"
-
 
         elif {"aide", "capacité", "que", "peux", "faire"}.intersection(lemmas):
             return "help"
@@ -114,6 +116,14 @@ class ChatbotController(http.Controller):
     def extract_name(self, message):
         match = re.search(r"(?:contact|client)\s+(.*)", message, re.IGNORECASE)
         return match.group(1).strip() if match else "Inconnu"
+
+    def extract_quotation_ref(self, message):
+        """
+        Extrait la référence du devis depuis le message.
+        Ex : "Envoyer le devis SO12345 par email" → retourne "SO12345"
+        """
+        match = re.search(r'\bSO\d+\b', message, re.IGNORECASE)
+        return match.group(0) if match else None
 
     def generate_chatbot_response(self, message):
         original_message = message.lower()
@@ -143,8 +153,15 @@ class ChatbotController(http.Controller):
             "list_sale_orders": self.list_sale_orders,
             "confirm_quotation": self.confirm_quotation,
             "list_opportunities": self.list_opportunities,
+            "cancel_quotation": self.cancel_quotation,
             "create_quotation": self.create_quotation,
+            "create_invoice": self.create_invoice,
             "sales_statistics": self.sales_statistics,
+            "send_quotation_email": self.send_quotation_email,
+            "list_products": self.list_products,
+            "greeting": self.greeting,
+            "thanks": self.thanks,
+
             "help": self.show_help
         }
 
@@ -175,8 +192,8 @@ class ChatbotController(http.Controller):
         return "❌ Aucune facture trouvée."
 
     def product_stock(self, message):
-        products = request.env['product.product'].sudo().search([], limit=5)
-        return "\n".join(f"📦 {p.name} : {p.qty_available} en stock" for p in products)
+        templates = request.env['product.template'].sudo().search([], limit=5)
+        return "\n".join(f"📦 {p.name} : {p.list_price} en stock" for p in templates)
 
     def purchase_order(self, message):
         orders = request.env['purchase.order'].sudo().search([], limit=3)
@@ -190,33 +207,130 @@ class ChatbotController(http.Controller):
         orders = request.env['sale.order'].sudo().search([], limit=5)
         return "\n".join(f"🧾 {o.name} - Client : {o.partner_id.name} - Total : {o.amount_total}" for o in orders)
 
+    import re
+
     def confirm_quotation(self, message):
-        orders = request.env['sale.order'].sudo().search([('state', '=', 'draft')], limit=1)
-        if orders:
-            orders.action_confirm()
-            return f"✅ Devis {orders.name} confirmé avec succès."
-        return "❌ Aucun devis à confirmer."
+        try:
+            match = re.search(r'\bSO\d+\b', message, re.IGNORECASE)
+            if not match:
+                return "❌ Référence du devis non trouvée dans le message."
+
+            reference = match.group(0)
+
+            order = request.env['sale.order'].sudo().search([
+                ('name', 'ilike', reference),
+                ('state', 'in', ['draft', 'sent'])  # seulement confirmables
+            ], limit=1)
+
+            if order:
+                order.action_confirm()
+                return f"✅ Devis {order.name} confirmé avec succès."
+            else:
+                return f"❌ Le devis {reference} n'est pas dans un état confirmable (brouillon ou envoyé)."
+
+        except Exception as e:
+            return f"❌ Erreur lors de la confirmation du devis : {str(e)}"
+
+    def cancel_quotation(self, message):
+        try:
+
+            match = re.search(r'\bSO\d+\b', message, re.IGNORECASE)
+            if not match:
+                return "❌ Référence du devis non trouvée dans le message."
+
+            reference = match.group(0)
+
+
+            order = request.env['sale.order'].sudo().search([
+                ('name', 'ilike', reference),
+                ('state', 'in', ['draft', 'sent'])
+            ], limit=1)
+
+            if order:
+                order.action_cancel()
+                return f"🛑 Devis {order.name} annulé avec succès."
+            else:
+                return f"❌ Aucun devis annulable trouvé avec la référence {reference}."
+
+        except Exception as e:
+            return f"❌ Erreur lors de l'annulation du devis : {str(e)}"
 
     def list_opportunities(self, message):
         leads = request.env['crm.lead'].sudo().search([('type', '=', 'opportunity')], limit=5)
         if leads:
-            return "\n".join(f"🎯 {l.name} - {l.stage_id.name} - {l.planned_revenue} €" for l in leads)
+            return "\n".join(f"🎯 {l.name} - {l.stage_id.name} - {l.prorated_revenue} €" for l in leads)
         return "❌ Aucune opportunité trouvée."
 
     def create_quotation(self, message):
-        name = self.extract_name(message)
-        partner = request.env['res.partner'].sudo().search([('name', 'ilike', name)], limit=1)
-        if partner:
-            order = request.env['sale.order'].sudo().create({
-                'partner_id': partner.id,
-            })
-            return f"🧾 Devis {order.name} créé pour le client {partner.name}."
-        return "❌ Client non trouvé pour créer un devis."
+        partner = request.env['res.partner'].sudo().search([], limit=1)
+        quotation = request.env['sale.order'].sudo().create({
+            'partner_id': partner.id,
+        })
+        return f"📄 Nouveau devis créé : {quotation.name}"
 
     def sales_statistics(self, message):
         orders = request.env['sale.order'].sudo().search([('state', '=', 'sale')])
         total = sum(o.amount_total for o in orders)
         return f"📊 Le chiffre d'affaires total est de {total:.2f} € sur {len(orders)} commandes validées."
+
+    def send_quotation_email(self, message):
+        try:
+            reference = self.extract_quotation_ref(message)
+            if not reference:
+                return "❌ Référence du devis non trouvée dans le message."
+
+            order = request.env['sale.order'].sudo().search([('name', 'ilike', reference)], limit=1)
+            if not order:
+                return f"❌ Aucun devis trouvé avec la référence {reference}."
+
+
+            template = request.env['mail.template'].sudo().browse(36)
+            if not template:
+                return "❌ Le modèle d'email avec l'ID 36 est introuvable."
+
+
+            template.send_mail(order.id, force_send=True)
+            return f"📧 Le devis {order.name} a été envoyé par email avec succès."
+
+        except Exception as e:
+            _logger.error(f"Erreur lors de l'envoi du devis par email : {e}")
+            return f"❌ Erreur lors de l'envoi du devis : {str(e)}"
+
+    def create_invoice(self, message):
+        # Extraire le nom du client dans le message (ex: "Créer une facture pour client Dupont")
+        name = self.extract_name(message)
+
+        # Rechercher le partenaire/client
+        partner = request.env['res.partner'].sudo().search([('name', 'ilike', name)], limit=1)
+        if not partner:
+            return f"❌ Aucun client trouvé avec le nom '{name}'."
+
+        try:
+            # Créer la facture (account.move de type facture client)
+            invoice_vals = {
+                'move_type': 'out_invoice',  # facture client
+                'partner_id': partner.id,
+                'invoice_date': fields.Date.today(),
+                'invoice_line_ids': [(0, 0, {
+                    'name': "Article exemple",  # Tu peux extraire des détails produits depuis message ou paramètres
+                    'quantity': 1,
+                    'price_unit': 100.0,
+                })],
+            }
+            invoice = request.env['account.move'].sudo().create(invoice_vals)
+
+            # Optionnel : valider la facture automatiquement (enlever si tu veux juste créer un brouillon)
+            invoice.action_post()
+
+            return f"🧾 Facture {invoice.name} créée et validée pour le client {partner.name}."
+        except Exception as e:
+            return f"❌ Erreur lors de la création de la facture : {str(e)}"
+
+    def list_products(self, message):
+        products = request.env['product.product'].sudo().search([('qty_available', '>', 0)], limit=10)
+        if products:
+            return "\n".join(f"📦 {p.name} - En stock : {p.qty_available}" for p in products)
+        return "❌ Aucun produit disponible en stock."
 
     def show_help(self, message):
         return ("📚 Voici ce que je peux faire :\n"
@@ -232,6 +346,12 @@ class ChatbotController(http.Controller):
         return ("❓ Je n'ai pas compris votre demande.\n"
                 "Exemples : 'Créer un contact Jean Dupont', 'Afficher la dernière facture', ou 'Lister les employés'.")
 
+    def greeting(self, message):
+        return "👋 Bonjour ! Comment puis-je vous aider aujourd'hui ?"
+
+    def thanks(self, message):
+        return "🙏 Avec plaisir ! N'hésitez pas si vous avez d'autres questions."
+
     @http.route('/chatbot/message', type='json', auth='user', methods=['POST'])
     def handle_message(self, **kw):
         try:
@@ -246,7 +366,7 @@ class ChatbotController(http.Controller):
 
         response = self.generate_chatbot_response(message)
 
-        # Historique
+
         request.env['chatbot.message'].sudo().create({
             'user_id': request.env.user.id,
             'message': message,
