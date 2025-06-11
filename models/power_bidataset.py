@@ -37,7 +37,7 @@ class PowerBIDataset(models.Model):
         ('published', 'Published')
     ], string="State", default='draft', tracking=True)
     decorated_state = fields.Html(string="Status", compute="_compute_decorated_state", store=False)
-
+    powerbi_id = fields.Char(string="Power BI Dataset ID")  # <-- champ manquant
     def _compute_decorated_state(self):
         """
         deco

@@ -1,0 +1,22 @@
+<odoo>
+    <record id="view_form_facturail" model="ir.ui.view">
+        <field name="name">power.bi.facturail.form</field>
+        <field name="model">power_bi.facturail</field>
+        <field name="arch" type="xml">
+          <form string="calculer facturail">
+            <group>
+            <field name="nombre"/>
+            <field name="resultat" readonly="1"/>
+            </group>
+           </form>
+        </field>
+    </record>
+
+
+    <record id="action_facturail" model="ir.actions.act_window">
+
+        <field name="name">Calculer facturail</field>
+        <field name="res_model">power_bi.facturail</field>
+        <field name="view_mode">form</field>
+    </record>
+</odoo>

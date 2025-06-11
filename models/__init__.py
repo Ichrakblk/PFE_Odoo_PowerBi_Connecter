@@ -12,3 +12,7 @@ from . import power_bireport
 from . import powerbi_report_choice
 from . import chatbot
 from . import chatbot_message
+from . import facturial
+from . import sale_prediction
+from . import sale_rf_prediction
+

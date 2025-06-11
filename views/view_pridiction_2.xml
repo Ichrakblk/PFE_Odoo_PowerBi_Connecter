@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_rf_prediction_form" model="ir.ui.view">
+        <field name="name">sale.rf.prediction.form</field>
+        <field name="model">sale.rf.prediction</field>
+        <field name="arch" type="xml">
+            <form string="Sales Amount Prediction Wizard" class="o_form_view">
+
+                <group>
+                    <field name="partner_ref" placeholder="ex: 123 (ID client)"/>
+                    <field name="product_ref" placeholder="ex: 456 (ID produit)"/>
+                    <field name="product_uom_qty"/>
+                    <field name="price_unit"/>
+                </group>
+                <footer>
+                    <button name="action_predict"
+                            string="Prédire"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Fermer"
+                            special="cancel"
+                            class="btn-secondary"/>s
+                </footer>
+
+                <separator string="Résultat"/>
+
+
+                <field name="prediction_result" readonly="1" widget="html" options="{'sanitize': false}"/>
+            </form>
+
+        </field>
+
+    </record>
+
+    <record id="action_sale_rf_prediction" model="ir.actions.act_window">
+        <field name="name">Sales Amount Prediction</field>
+        <field name="res_model">sale.rf.prediction</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

@@ -23,7 +23,9 @@
 
     <menuitem id="menu_power_bi_report" name="Power BI Reports" parent="menu_powerbi_root" action="action_power_bi_report" />
 
-    <menuitem id="menu_chatbot_access" name="🤖 Chatbot Assistant" parent="menu_powerbi_root"
-              action="action_open_chatbot_window" sequence="999"/>
 
+
+
+     <menuitem id="menu_sale_prediction" name="Sales forecast " parent="menu_powerbi_root" action="action_sale_prediction" sequence="1000"/>
+     <menuitem id="menu_sale_rf_prediction" name="sale_rf_prediction" parent="menu_powerbi_root" action="action_sale_rf_prediction" sequence="1100"/>
 </odoo>

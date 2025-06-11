@@ -1,0 +1,40 @@
+<odoo>
+  <record id="view_form_sale_prediction" model="ir.ui.view">
+    <field name="name">sale.prediction.form</field>
+    <field name="model">sale.prediction</field>
+    <field name="arch" type="xml">
+      <form string="Prévision de vente">
+        <sheet>
+          <group>
+            <field name="product_name"/>
+            <button name="get_prediction"
+                    string="Predict"
+                    type="object"
+                    class="btn-primary"
+                    reload="1"/>
+          </group>
+          <group>
+            <field name="prediction_result" widget="text" readonly="1" style="height: 150px; color: #0B5394; font-size: 14px;"/>
+          </group>
+          <group>
+            <field name="prediction_graph"
+       widget="image"
+       filename="prediction_graph"
+       options="{'size': (1200, 600)}"
+       style="max-width: 100%; height: auto;"/>
+
+
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="action_sale_prediction" model="ir.actions.act_window">
+    <field name="name">Sales forecast</field>
+    <field name="res_model">sale.prediction</field>
+    <field name="view_mode">form</field>
+    <field name="view_id" ref="view_form_sale_prediction"/>
+    <field name="target">new</field>
+  </record>
+</odoo>

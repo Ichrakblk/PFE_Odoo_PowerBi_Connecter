@@ -18,6 +18,9 @@
         'views/chatbot_view.xml',
         'views/chatbot_template.xml',
         'views/chatbot_templateeee.xml',
+        'views/facturail.xml',
+        'views/sale_prediction_view.xml',
+        'views/view_pridiction_2.xml',
 
         'views/power_bi_menus.xml',
         'security/ir.model.access.csv',

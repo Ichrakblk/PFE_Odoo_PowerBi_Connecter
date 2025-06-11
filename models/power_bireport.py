@@ -65,41 +65,22 @@ class PowerBIReport(models.Model):
             else:
                 rec.report_embed = False
 
-    @api.onchange('workspace_id', 'dataset_id')
+    @api.onchange('workspace_id')
     def _onchange_workspace_id(self):
-        """When changing workspace or dataset, reload only the reports associated with the selected dataset"""
+        self.dataset_id = False
         self.available_report_ids = [(5, 0, 0)]
 
-        if not self.workspace_id or not self.dataset_id:
-            return
+        if not self.workspace_id:
+            return {'domain': {'dataset_id': []}}
 
-        selected_dataset_name = self.dataset_id.name
-        _logger.info("🔎 Selected Dataset: %s", selected_dataset_name)
+        # Récupère les IDs Power BI des datasets via l'API
+        datasets = self.get_all_dataset_ids(self.workspace_id.workspace_id)
+        dataset_powerbi_ids = [ds[0] for ds in datasets]  # Liste des IDs externes (GUID)
 
-        dataset_info = self.get_all_dataset_ids(self.workspace_id.workspace_id)
+        # Applique un domaine sur le champ powerbi_id du modèle dataset
+        domain = [('powerbi_id', 'in', dataset_powerbi_ids)]
 
-        selected_dataset_id = None
-        for ds_id, ds_name in dataset_info:
-            if ds_name == selected_dataset_name:
-                selected_dataset_id = ds_id
-                break
-
-        if selected_dataset_id:
-            _logger.info("📊 Dataset found with ID: %s", selected_dataset_id)
-
-            reports = self.get_reports_by_dataset(self.workspace_id.workspace_id)
-
-            reports_for_selected_dataset = reports.get(selected_dataset_id, [])
-
-            if reports_for_selected_dataset:
-                _logger.info("📋 Reports associated with dataset %s:", selected_dataset_id)
-
-                report_lines = []
-
-            else:
-                _logger.warning("⚠️ No reports found for the selected dataset.")
-        else:
-            _logger.warning("⚠️ The selected dataset was not found in Power BI.")
+        return {'domain': {'dataset_id': domain}}
 
     @api.onchange('available_report_ids')
     def _onchange_available_report_ids(self):
@@ -208,22 +189,40 @@ class PowerBIReport(models.Model):
 
     def get_all_dataset_ids(self, workspace_id):
         access_token = self._get_access_token()
-        url = f"https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/datasets"
+        if not access_token:
+            _logger.error("❌ Impossible de récupérer le token d'accès.")
+            return []
+
+        url = f"https://api.powerbi.com/v1.0/myorg/groups/5240a229-ed55-45a7-a593-b23a4bbea19a/datasets"
         headers = {
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {access_token}'
         }
 
-        response = requests.get(url, headers=headers)
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            _logger.error("❌ Erreur lors de la requête GET datasets: %s", str(e))
+            return []
+
         dataset_info = []
+        response_data = response.json()
 
-        if response.status_code == 200:
-            datasets = response.json().get('value', [])
-            for ds in datasets:
-                dataset_info.append((ds.get("id"), ds.get("name")))
-        else:
-            _logger.error("Error fetching datasets: %s", response.text)
+        datasets = response_data.get('value', [])
+        if not datasets:
+            _logger.warning("⚠️ Aucun dataset trouvé dans le workspace %s.", workspace_id)
+            return []
 
+        for ds in datasets:
+            dataset_id = ds.get("id")
+            dataset_name = ds.get("name")
+            if dataset_id and dataset_name:
+                dataset_info.append((dataset_id, dataset_name))
+            else:
+                _logger.warning("⚠️ Dataset incomplet détecté : %s", ds)
+
+        _logger.info("✅ %d datasets récupérés avec succès depuis le workspace %s.", len(dataset_info), workspace_id)
         return dataset_info
 
     def get_reports_by_dataset(self, workspace_id):
@@ -247,6 +246,40 @@ class PowerBIReport(models.Model):
             _logger.error("Error fetching reports: %s", response.text)
 
         return reports_by_dataset
+
+    def action_show_datasets(self):
+        for record in self:
+            datasets = record.get_all_dataset_ids(record.workspace_id.workspace_id)
+            _logger.info("✅ Datasets récupérés pour workspace %s :", record.workspace_id.name)
+
+            if not datasets:
+                raise UserError("Aucun dataset trouvé pour ce workspace.")
+
+            created_datasets = []
+
+            for dataset_id, dataset_name in datasets:
+                _logger.info("🔹 ID: %s | Nom: %s", dataset_id, dataset_name)
+
+                # Vérifier si le dataset existe déjà
+                dataset_rec = self.env['power_bi.dataset'].search([('powerbi_id', '=', dataset_id)], limit=1)
+
+                if not dataset_rec:
+                    # Créer le dataset s'il n'existe pas
+                    dataset_rec = self.env['power_bi.dataset'].create({
+                        'name': dataset_name,
+                        'powerbi_id': dataset_id
+                    })
+                    _logger.info("✅ Dataset créé : %s", dataset_name)
+                else:
+                    _logger.info("ℹ️ Dataset déjà existant : %s", dataset_name)
+
+                created_datasets.append(dataset_rec.id)
+
+            # Optionnel : associer un des datasets créés (le premier par exemple) au champ `dataset_id`
+            if created_datasets:
+                record.dataset_id = created_datasets[0]
+
+        return True
 
     def action_test_report_embed(self):
         self._compute_report_embed()
@@ -285,85 +318,120 @@ class PowerBIReport(models.Model):
                 _logger.info(f"👉 {title}")
 
     def action_export_pdf(self):
-        """
-        Export the current Power BI report as a PDF file and return the binary content.
-        """
         self.ensure_one()
+
+        if not self.workspace_id or not self.dataset_id:
+            raise UserError("Le workspace ou le dataset est manquant.")
+
         access_token = self._get_access_token()
+        if not access_token:
+            raise UserError("Impossible d'obtenir le token d'accès.")
 
+        # 1. Récupérer tous les rapports du dataset
+        selected_dataset_name = self.dataset_id.name
+        dataset_info = self.get_all_dataset_ids(self.workspace_id.workspace_id)
 
+        selected_dataset_id = None
+        for ds_id, ds_name in dataset_info:
+            if ds_name == selected_dataset_name:
+                selected_dataset_id = ds_id
+                break
 
-        export_url = f"https://api.powerbi.com/v1.0/myorg/groups/5240a229-ed55-45a7-a593-b23a4bbea19a/reports/d02dbe0f-68ba-47f4-8350-db54b67b1123/ExportTo"
+        if not selected_dataset_id:
+            raise UserError("Aucun ID de dataset trouvé correspondant au nom sélectionné.")
+
+        reports = self.get_reports_by_dataset(self.workspace_id.workspace_id)
+        reports_for_selected_dataset = reports.get(selected_dataset_id, [])
+
+        if not reports_for_selected_dataset:
+            raise UserError("Aucun rapport trouvé pour le dataset sélectionné.")
+
+        # 2. Prendre le premier rapport lié
+        report_id = reports_for_selected_dataset[0][0]  # (report_id, report_name)
+        _logger.info("🧾 Report sélectionné pour export : ID = %s", report_id)
+
+        # 3. Construire l'URL d'export dynamique
+        export_url = f"https://api.powerbi.com/v1.0/myorg/groups/{self.workspace_id.workspace_id}/reports/{report_id}/ExportTo"
+        _logger.info("Export URL construit : %s", export_url)
 
         headers = {
             'Authorization': f'Bearer {access_token}',
             'Content-Type': 'application/json'
         }
 
-
         body = {
             "format": "PDF"
         }
 
+        # Lancer la demande d'export
         response = requests.post(export_url, headers=headers, json=body)
-
         if response.status_code != 202:
-            _logger.error("Échec de l'export PDF : %s", response.text)
+            _logger.error("❌ Échec de l'export PDF : %s", response.text)
             raise UserError("Erreur lors de la génération du PDF depuis Power BI.")
 
-        # Get the export ID from the response
+        # Récupérer l'ID d'export
         export_id = response.json().get('id')
         if not export_id:
             raise UserError("ID d'export introuvable.")
 
+        # URL de suivi de l'export
+        status_url = f"https://api.powerbi.com/v1.0/myorg/groups/{self.workspace_id.workspace_id}/reports/{report_id}/exports/{export_id}"
+        _logger.info("Export  : %s", status_url)
 
-        status_url = f"https://api.powerbi.com/v1.0/myorg/groups/5240a229-ed55-45a7-a593-b23a4bbea19a/reports/d02dbe0f-68ba-47f4-8350-db54b67b1123/exports/{export_id}"
-        while True:
+        # Polling pour vérifier l'état de l'export
+        for _ in range(15):  # par ex. 15 essais * 8sec = 120sec max
+            time.sleep(8)
             status_response = requests.get(status_url, headers=headers)
-            _logger.info(f"HTTP {status_response.status_code}")
-            try:
-                status_data = status_response.json()
-                _logger.info(f"Statut export: {status_data.get('status')}")
-            except ValueError:
-                _logger.error("Contenu de la réponse non JSON : %s", status_response.text)
-                raise UserError("Réponse inattendue lors de la vérification du statut d'export PDF.")
+            if status_response.status_code != 200:
+                _logger.warning(f"Réponse inattendue lors du polling: {status_response.status_code}")
+                continue
 
-            if status_data.get("status") == "Succeeded":
+            status_data = status_response.json()
+            status = status_data.get("status")
+            _logger.info(f"Statut export PDF : {status}")
+
+            if status == "Succeeded":
                 break
-            elif status_data.get("status") == "Failed":
+            elif status == "Failed":
                 raise UserError("L'export PDF a échoué.")
-            time.sleep(2)
+        else:
+            raise UserError("L'export du PDF a expiré.")
 
-
+        # Télécharger le fichier PDF
         file_url = status_url + "/file"
         pdf_response = requests.get(file_url, headers=headers)
-
-        if pdf_response.status_code == 200:
-            text = self._extract_text_from_pdf(pdf_response.content)
-            _logger.info(f"Texte extrait du PDF : {text}")
-            if not text.strip():
-                _logger.warning("Aucun texte extrait du PDF.")
-
-
-            summary = self._summarize_text(text)
-            self.summary_text = summary
-
-
-            attachment = self.env['ir.attachment'].create({
-                'name': f"{self.name}.pdf",
-                'type': 'binary',
-                'datas': base64.b64encode(pdf_response.content),
-                'res_model': self._name,
-                'res_id': self.id,
-                'mimetype': 'application/pdf'
-            })
-            return {
-                'type': 'ir.actions.act_url',
-                'url': f'/web/content/{attachment.id}?download=true',
-                'target': 'new'
-            }
-        else:
+        if pdf_response.status_code != 200:
             raise UserError("Erreur lors du téléchargement du fichier PDF.")
+
+        # Enregistrer le PDF en pièce jointe Odoo
+        attachment = self.env['ir.attachment'].create({
+            'name': f"{self.name}.pdf",
+            'type': 'binary',
+            'datas': base64.b64encode(pdf_response.content),
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': 'application/pdf',
+        })
+
+        _logger.info("✅ PDF exporté et enregistré avec succès.")
+
+        # --- Extraction du texte depuis le PDF ---
+        extracted_text = self._extract_text_from_pdf(pdf_response.content)
+        _logger.info("Texte extrait du PDF (premiers 200 caractères) : %s", extracted_text[:200])
+
+        # --- Résumé du texte extrait ---
+        summary = self._summarize_text(extracted_text)
+        _logger.info("Résumé généré : %s", summary)
+
+        # --- Mise à jour du champ summary_text ---
+        self.summary_text = summary
+
+        # Retourne une action pour ouvrir ou télécharger le PDF
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/content/{attachment.id}?download=true',
+            'target': 'new',
+        }
 
     def _extract_text_from_pdf(self, pdf_content):
         doc = fitz.open(stream=pdf_content, filetype="pdf")
@@ -403,6 +471,8 @@ class PowerBIReport(models.Model):
         except Exception as e:
             _logger.error(f"Exception during summarization via Ollama: {str(e)}")
             return "Summary not available."
+
+
 
 
 

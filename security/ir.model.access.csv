@@ -13,5 +13,7 @@ access_power_bi_job,job.model,model_job_model,,1,1,1,1
 access_log_message,log.message,model_log_message,,1,1,1,1
 access_power_bi_report,power_bi.report,model_power_bi_report,,1,1,1,1
 access_power_bi_report_choice,power_bi.report.choice,model_power_bi_report_choice,,1,1,1,1
-
+access_power_bi_calculer,power_bi.facturail,model_power_bi_facturail,,1,1,1,1
+access_sale_prediction_user,sale.prediction user,model_sale_prediction,,1,1,1,1
+access_sale_rf_prediction_user,sale.rf.prediction user,model_sale_rf_prediction,,1,1,1,1
 
