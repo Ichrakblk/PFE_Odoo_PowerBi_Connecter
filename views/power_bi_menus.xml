@@ -4,28 +4,21 @@
     <menuitem id="menu_powerbi_connections" parent="menu_powerbi_root" name="Connections" action="action_powerbi_connections"/>
     <menuitem id="menu_powerbi_workspaces" parent="menu_powerbi_root" name="Workspaces" action="action_redirect_to_tree"/>
 
-    <menuitem id="menu_powerbi_tables" parent="menu_powerbi_root" name="Tables" action="action_power_bi_table"/>
-    <menuitem id="menu_powerbi_datasets" parent="menu_powerbi_root" name="Datasets" action="action_powerbi_datasets"/>
 
+    <menuitem id="menu_powerbi_tables" parent="menu_powerbi_root" name="Tables" action="action_power_bi_table" sequence="10"/>
+    <menuitem id="menu_powerbi_datasets" parent="menu_powerbi_root" name="Datasets" action="action_powerbi_datasets" sequence="20"/>
 
-    <menuitem id="menu_powerbi_dashboard_form" parent="menu_powerbi_root" name="Dashboard" action="action_power_bi_dashboard"/>
+    <menuitem id="menu_powerbi_dashboard_form" parent="menu_powerbi_root" name="Dashboard" action="action_power_bi_dashboard" sequence="40"/>
 
-    <menuitem id="menu_powerbi" name=" Configuration" parent="menu_powerbi_root"/>
-
-
+    <menuitem id="menu_powerbi" name="Configuration" parent="menu_powerbi_root" sequence="50"/>
     <menuitem id="menu_powerbi_job" parent="menu_powerbi" name="Jobs" action="action_cron_jobs_upload_all"/>
-
-
     <menuitem id="menu_powerbi_log" parent="menu_powerbi" name="Log Message" action="action_log_message"/>
 
+    <menuitem id="menu_power_bi_report" name="Power BI Reports" parent="menu_powerbi_root" action="action_power_bi_report" sequence="30"/>
+
+    <menuitem id="menu_prediction_root" name="Prediction" parent="menu_powerbi_root" sequence="100"/>
 
 
-
-    <menuitem id="menu_power_bi_report" name="Power BI Reports" parent="menu_powerbi_root" action="action_power_bi_report" />
-
-
-
-
-     <menuitem id="menu_sale_prediction" name="Sales forecast " parent="menu_powerbi_root" action="action_sale_prediction" sequence="1000"/>
-     <menuitem id="menu_sale_rf_prediction" name="sale_rf_prediction" parent="menu_powerbi_root" action="action_sale_rf_prediction" sequence="1100"/>
+    <menuitem id="menu_sale_prediction" name="Product Sales Forecast" parent="menu_prediction_root" action="action_sale_prediction" sequence="10"/>
+    <menuitem id="menu_sale_rf_prediction" name="Sales Amount Estimation" parent="menu_prediction_root" action="action_sale_rf_prediction" sequence="20"/>
 </odoo>

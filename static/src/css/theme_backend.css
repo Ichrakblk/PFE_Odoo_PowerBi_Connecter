@@ -117,7 +117,7 @@ body, .o_main_navbar, .o_list_view, .o_form_view {
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   margin-bottom: 10px;
-  width: 300%;
+  width: 200%;
   padding: 0 10px;
 }
 
@@ -134,6 +134,7 @@ body, .o_main_navbar, .o_list_view, .o_form_view {
   border-collapse: separate;
   border-spacing: 0 10px;
   background: transparent;
+    width: 200%;
 }
 
 /* Bouton "New" rouge */
@@ -161,7 +162,8 @@ body, .o_main_navbar, .o_list_view, .o_form_view {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  justify-content: space-between;
+    justify-content: flex-start;
+
   width: 300%;
 }
 
@@ -325,4 +327,15 @@ body, .o_main_navbar, .o_list_view, .o_form_view {
 .o_form_button_cancel:hover,
 .o_list_button_add:hover {
   background-color: #e04e4e;
+}
+
+.o-dropdown--menu.dropdown-menu .dropdown-item {
+    color: #1e1e2e !important;
+    font-weight: 600;
+    font-family: var(--font-main);
+}
+
+.o-dropdown--menu.dropdown-menu .dropdown-item:hover {
+    background-color: var(--powerbi-yellow) !important;
+    color: #fff !important;
 }

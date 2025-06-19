@@ -1,7 +1,7 @@
 <odoo>
   <template id="chatbot_button_template" inherit_id="web.layout">
     <xpath expr="//body" position="inside">
-      <div id="chatbot-button" style="cursor:pointer; position: fixed; bottom: 20px; right: 20px; background: #007bff; color: white; padding: 10px; border-radius: 50%; font-size: 24px; z-index: 9999;">💬</div>
+      <div id="chatbot-button" style="cursor:pointer; position: fixed; bottom: 20px; right: 20px; background: #9bccf2; color: white; padding: 10px; border-radius: 50%; font-size: 24px; z-index: 9999;">💬</div>
       <div id="chatbot-iframe-container" style="display:none; position: fixed; bottom: 70px; right: 20px; width: 400px; height: 500px; border: 1px solid #ccc; z-index: 9999; background: white;">
         <iframe src="/chatbot" style="width: 100%; height: 100%; border: none;"></iframe>
       </div>

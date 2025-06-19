@@ -77,9 +77,8 @@ WHERE
                     buf.seek(0)
                     image = base64.b64encode(buf.read())
                     buf.close()
-                    break
-                else:
-                    result = f"Pas assez de données pour {self.product_name}"
+
+                
 
                 self.prediction_result = result
                 self.prediction_graph = image

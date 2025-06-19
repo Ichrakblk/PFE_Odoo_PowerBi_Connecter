@@ -14,7 +14,7 @@
                     reload="1"/>
           </group>
           <group>
-            <field name="prediction_result" widget="text" readonly="1" style="height: 150px; color: #0B5394; font-size: 14px;"/>
+            <field name="prediction_result" widget="text" readonly="1" style="font-size: 25px; color: #e74c3c; font-weight: bold; text-align: center; padding: 10px;"/>
           </group>
           <group>
             <field name="prediction_graph"

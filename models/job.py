@@ -28,8 +28,10 @@ class Job(models.Model):
             model = self.env[model_name]
 
             for record in model.search([]):
-
-                print(f"Uploading record: {record.name}")
+                if hasattr(record, 'name'):
+                    print(f"Uploading record: {record.name}")
+                else:
+                    print(f"Uploading record (no name field): ID={record.id}")
 
         return True
 

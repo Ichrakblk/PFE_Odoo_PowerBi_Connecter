@@ -8,6 +8,7 @@ class PowerBiDashboard(models.Model):
     _description = 'Power BI Dashboard'
     _auto = False
 
+
     workspace_total = fields.Integer(string="Total Workspaces", compute="_compute_counts", store=False)
 
 

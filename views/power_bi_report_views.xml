@@ -27,7 +27,7 @@
                                 <field name="dataset_id"  />
                                 <field name="available_report_ids" widget="many2many_tags" domain="[('id', 'in', available_report_ids)]"/>
                                  <field name="embed_url" readonly="1"/>
-                                <field name="report_id" />
+
                                 <field name="has_multiple_reports" invisible="1"/>
                                   <field name="summary_text" widget="text"/>
 
@@ -35,7 +35,7 @@
 
                             <div style="margin-left:30px">
                                <button name="action_show_datasets"
-        string="Afficher Datasets"
+        string="Show Dataset"
         type="object"
         class="btn-primary"/>
 
@@ -48,10 +48,7 @@
                                     onmouseover="this.style.backgroundColor='#d4ac0d';"
                                     onmouseout="this.style.backgroundColor='#f2c811';"
                                 />
-                                <button name="action_test_page_titles"
-        type="object"
-        string="Tester Titres des Visuels"
-        class="btn-primary"/>
+
                                 <button name="action_export_pdf"
                         string="Exporter PDF"
                         type="object"

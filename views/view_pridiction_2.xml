@@ -19,13 +19,13 @@
                             class="btn-primary"/>
                     <button string="Fermer"
                             special="cancel"
-                            class="btn-secondary"/>s
+                            class="btn-secondary"/>
                 </footer>
 
                 <separator string="Résultat"/>
 
 
-                <field name="prediction_result" readonly="1" widget="html" options="{'sanitize': false}"/>
+                <field name="prediction_result" readonly="1" widget="html" options="{'sanitize': false}"  style="font-size: 32px; color: #e74c3c; font-weight: bold; text-align: center; padding: 10px;"/>
             </form>
 
         </field>

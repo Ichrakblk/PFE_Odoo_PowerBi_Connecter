@@ -97,7 +97,7 @@ class SaleRFPrediction(models.TransientModel):
                 self.product_uom_qty,
                 self.price_unit
             )
-            self.write({'prediction_result': f"Montant total prédit : {prediction:.2f}"})
+            self.write({'prediction_result': f"Amount total prédit : {prediction:.2f}"})
         except Exception as e:
             self.write({'prediction_result': f"Erreur lors de la prédiction : {str(e)}"})
 
