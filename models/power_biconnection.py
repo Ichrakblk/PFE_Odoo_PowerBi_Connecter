@@ -79,8 +79,17 @@ class PowerBIConnection(models.Model):
                 self.env.cr.commit()
                 _logger.info(
                     f"Connexion réussie ! {workspace_count} workspaces trouvés. Premier workspace: {first_workspace_name}")
-                raise UserError(
-                    f"Connexion réussie ! {workspace_count} workspaces trouvés. Premier workspace: {first_workspace_name}")
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': 'Connexion réussie',
+                        'message': f"{workspace_count} workspaces trouvés. Premier workspace: {first_workspace_name}",
+                        'type': 'info',
+                        'sticky': False,
+                    }
+                }
+
             else:
                 self.write({'state': 'not_connected', 'workspace_name': "Erreur de connexion"})
                 self.env.cr.commit()
@@ -95,8 +104,8 @@ class PowerBIConnection(models.Model):
             })
 
             self.env.cr.commit()
-            _logger.error(f"Échec de la connexion : {str(e)}")
-            raise UserError(f"Échec de la connexion : {str(e)}")
+            _logger.error(f" : {str(e)}")
+            raise UserError(f" : {str(e)}")
 
 
     def existe_workspace_popup(self):

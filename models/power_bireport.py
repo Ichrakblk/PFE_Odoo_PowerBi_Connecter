@@ -193,7 +193,7 @@ class PowerBIReport(models.Model):
             _logger.error("❌ Impossible de récupérer le token d'accès.")
             return []
 
-        url = f"https://api.powerbi.com/v1.0/myorg/groups/5240a229-ed55-45a7-a593-b23a4bbea19a/datasets"
+        url = f"https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/datasets"
         headers = {
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {access_token}'

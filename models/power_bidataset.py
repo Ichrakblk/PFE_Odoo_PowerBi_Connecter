@@ -152,7 +152,7 @@ class PowerBIDataset(models.Model):
         if not token:
             raise UserError("Impossible d'obtenir un token d'accès Power BI.")
 
-        workspace_id = "5240a229-ed55-45a7-a593-b23a4bbea19a"
+        workspace_id = self.workspace_id.workspace_id
         url = f'https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/datasets'
         headers = {
             'Authorization': f'Bearer {token}',

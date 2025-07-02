@@ -133,63 +133,97 @@ class PowerBIWorkspace(models.Model):
             'log_message': message,
         })
 
+    def get_access_token(self):
+        tenant_id = 'a079a463-30e0-4530-a231-576caa0508bc'
+        client_id = '84220ff8-fe80-40db-a7ae-111af1de085f'
+        client_secret = '8Ei8Q~Id5c~sABXw3m90Z.a2lbL3rmgkAWPrlbUb'
+
+        url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        data = {
+            'grant_type': 'client_credentials',
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'scope': 'https://analysis.windows.net/powerbi/api/.default'
+        }
+
+        response = requests.post(url, headers=headers, data=data)
+        response_data = response.json()
+        access_token = response_data.get('access_token')
+
+
+        return access_token
+
     @api.model
     def create_workspace_in_powerbi(self, connection_id, workspace_name):
         _logger = logging.getLogger(__name__)
+
         if not workspace_name:
             raise UserError("Le nom du workspace est requis !")
 
         connection = self.env['power_bi.connection'].browse(connection_id)
         if not connection.exists():
-            raise UserError("Veuillez sélectionner une connexion Power BI valide.")
+            raise UserError("Connexion Power BI invalide.")
 
         try:
             token = connection.get_access_token()
             if not token:
                 raise UserError("Impossible d'obtenir un access token.")
 
+            # Étape A : Créer le workspace
             url = 'https://api.powerbi.com/v1.0/myorg/groups'
-            headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+            headers = {
+                'Authorization': f'Bearer {token}',
+                'Content-Type': 'application/json'
+            }
             data = {'name': workspace_name}
             response = requests.post(url, headers=headers, json=data)
+
+            _logger.info(f"Request URL: {url}")
+            _logger.info(f"Request headers: {headers}")
+            _logger.info(f"Request data: {data}")
+            _logger.info(f"Response status: {response.status_code}")
+            _logger.info(f"Response body: {response.text}")
 
             if response.status_code in [200, 201]:
                 workspace_data = response.json()
                 workspace_id = workspace_data.get('id')
+
                 if not workspace_id:
-                    raise UserError("Réponse API invalide : aucun ID de workspace retourné.")
+                    raise UserError("Aucun ID de workspace retourné.")
 
-                # Si on est dans un record existant (self contient un record en cours), on le met à jour
-                if self and len(self) == 1 and not self.workspace_id:
-                    self.write({
-                        'workspace_id': workspace_id,
-                    })
-                    self.log_message('success', f"Workspace '{workspace_name}' mis à jour avec l'ID Power BI.")
-                    return self
-                else:
-                    # Sinon on en crée un nouveau
-                    workspace = self.create({
-                        'name': workspace_name,
-                        'workspace_id': workspace_id,
-                        'connection_id': connection.id,
-                    })
-                    self.log_message('success', f"Workspace '{workspace_name}' créé avec succès.")
-                    return workspace
+                # Étape B : Ajouter l'utilisateur i.bouleklaka@intiqaal.com comme Admin
+                user_add_url = f"https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/users"
+                user_payload = {
+                    "identifier": "i.bouleklaka@intiqaal.com",
+                    "principalType": "User",
+                    "groupUserAccessRight": "Admin"
+                }
 
-                self.log_message('success', f"Workspace '{workspace_name}' créé avec succès.")
+                user_response = requests.post(user_add_url, headers=headers, json=user_payload)
+                _logger.info(f"Ajout utilisateur: status={user_response.status_code}, body={user_response.text}")
+
+                if user_response.status_code not in [200, 201]:
+                    raise UserError(f"Erreur lors de l'ajout de l'utilisateur: {user_response.text}")
+
+                # Enregistrement Odoo
+                workspace = self.create({
+                    'name': workspace_data.get('name'),
+                    'workspace_id': workspace_id,
+                    'connection_id': connection.id,
+                })
+
+                self.log_message('success',
+                                 f"✅ Workspace '{workspace.name}' créé avec succès (ID: {workspace.workspace_id}) et utilisateur ajouté.")
                 return workspace
             else:
-                error_message = f"Erreur API Power BI: {response.text}"
-                self.log_message('error', error_message)
+                error_message = f"Erreur Power BI API ({response.status_code}) : {response.text}"
+                _logger.error(error_message)
                 raise UserError(error_message)
+
         except Exception as e:
-            error_message = f"Échec de la création du workspace : {str(e)}"
-            _logger.error(error_message)
-            self.log_message('error', error_message)
-            raise UserError(error_message)
-
-
-
+            _logger.exception("❌ Erreur inattendue lors de la création du workspace.")
+            raise UserError(f"Erreur inattendue : {str(e)}")
 
     def action_create_workspace(self):
         self.ensure_one()
