@@ -466,7 +466,7 @@ class PowerBIReport(models.Model):
                 result = response.json()
                 return result.get("response", "Summary not available.")
             else:
-                _logger.error(f"Summarization erro via Ollama: {response.status_code} - {response.text}")
+                _logger.error(f"Summarization erro rvia Ollama: {response.status_code} - {response.text}")
                 return "Summary not available."
         except Exception as e:
             _logger.error(f"Exception during summarization via Ollama: {str(e)}")
